@@ -29,27 +29,47 @@ public class JwtService {
     @Value("${jwt.secret:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
     private String secretKey;
 
-    @Value("${jwt.expiration:86400000}") // 24 heures par défaut
-    private long jwtExpiration;
-
     /**
-     * Génère un token JWT pour un utilisateur.
+     * Génère un token JWT pour un utilisateur avec une durée de validité de 15 minutes.
      *
      * @param username le nom d'utilisateur
      * @return le token JWT généré
      */
     public String generateToken(String username) {
-        return generateToken(new HashMap<>(), username);
+        return generateToken(new HashMap<>(), username, 900);
     }
 
     /**
-     * Génère un token JWT avec des claims supplémentaires.
+     * Génère un token JWT pour un utilisateur en spécifiant une durée de validité.
+     *
+     * @param username le nom d'utilisateur
+     * @param jwtExpiration la durée de validité
+     * @return le token JWT généré
+     */
+    public String generateToken(String username, long jwtExpiration) {
+        return generateToken(new HashMap<>(), username,  jwtExpiration);
+    }
+
+    /**
+     * Génère un token JWT avec des claims supplémentaires et une durée de validité de 15 minutes.
      *
      * @param extraClaims claims supplémentaires à inclure dans le token
      * @param username le nom d'utilisateur
      * @return le token JWT généré
      */
     public String generateToken(Map<String, Object> extraClaims, String username) {
+        return generateToken(extraClaims, username, 900);
+    }
+
+    /**
+     * Génère un token JWT avec des claims supplémentaires et en spécifiant une durée de validité.
+     *
+     * @param extraClaims claims supplémentaires à inclure dans le token
+     * @param jwtExpiration la durée de validité
+     * @param username le nom d'utilisateur
+     * @return le token JWT généré
+     */
+    public String generateToken(Map<String, Object> extraClaims, String username, long jwtExpiration) {
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(username)

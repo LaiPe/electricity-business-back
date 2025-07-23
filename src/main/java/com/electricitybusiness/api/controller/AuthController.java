@@ -4,6 +4,7 @@ import com.electricitybusiness.api.model.RoleUtilisateur;
 import com.electricitybusiness.api.model.Utilisateur;
 import com.electricitybusiness.api.service.JpaUserDetailsService;
 import com.electricitybusiness.api.service.JwtService;
+import com.electricitybusiness.api.service.RefreshTokenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,12 +35,14 @@ public class AuthController {
     private final JpaUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
     private final AuthenticationManager authenticationManager;
 
     /**
      * Endpoint d'authentification JWT.
      * POST /api/auth/login
      */
+    //TODO Retourner un DTO au lieu d'une Map
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody AuthRequest request) {
         log.info("Tentative de connexion pour l'utilisateur: {}", request.username());
@@ -49,15 +52,17 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(request.username(), request.password())
             );
             
-            // Générer le token JWT
-            String token = jwtService.generateToken(request.username());
+            // Générer l'access token
+            String accessToken = jwtService.generateToken(request.username());
+
+            // Générer le refresh token
+            String refreshToken = refreshTokenService.generateRefreshToken(request.username());
             
             Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("type", "Bearer");
+            response.put("access_token", accessToken);
+            response.put("refresh_token", refreshToken);
             response.put("message", "Authentification réussie");
-            response.put("username", request.username());
-            
+
             log.info("Utilisateur connecté avec succès: {}", request.username());
             return ResponseEntity.ok(response);
             
@@ -80,6 +85,7 @@ public class AuthController {
      * Endpoint d'inscription d'un nouvel utilisateur.
      * POST /api/auth/register
      */
+    //TODO Retourner un DTO au lieu d'une Map
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
         log.info("Tentative d'inscription pour l'utilisateur: {}", request.getPseudo());
@@ -118,12 +124,18 @@ public class AuthController {
      * Endpoint pour vérifier le statut d'authentification.
      * GET /api/auth/status
      */
+    //TODO Retourner un DTO au lieu d'une Map
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getAuthStatus() {
         Map<String, Object> response = new HashMap<>();
         response.put("authenticated", true);
         response.put("message", "Utilisateur authentifié");
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/refresh")
+    public ResponseEntity<Map<String, Object>> refresh(@Valid @RequestBody ) {
+
     }
 
     /**
