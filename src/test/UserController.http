@@ -1,0 +1,175 @@
+### Variables
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### 1. GET - Récupérer tous les utilisateurs
+GET {{baseUrl}}/users
+Accept: {{contentType}}
+
+###
+
+### 2. POST - Créer un nouvel utilisateur
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "johndoe",
+  "password": "securepassword123",
+  "email": "john.doe@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "birthDate": "1990-05-15",
+  "role": "USER",
+  "iban": "FR1420041010050500013M02606",
+  "signinDate": "2024-01-15T10:30:00",
+  "banned": false
+}
+
+###
+
+### 3. POST - Créer un utilisateur ADMIN
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "admin",
+  "password": "adminpassword456",
+  "email": "admin@company.com",
+  "firstName": "Alice",
+  "lastName": "Smith",
+  "birthDate": "1985-12-01",
+  "role": "ADMIN",
+  "iban": "GB29NWBK60161331926819",
+  "signinDate": "2024-01-10T08:00:00",
+  "banned": false
+}
+
+###
+
+### 4. GET - Récupérer un utilisateur par ID (remplacer {id} par un ID existant)
+GET {{baseUrl}}/users/1
+Accept: {{contentType}}
+
+###
+
+### 5. GET - Récupérer un utilisateur par ID inexistant (devrait retourner 404)
+GET {{baseUrl}}/users/999
+Accept: {{contentType}}
+
+###
+
+### 6. PUT - Mettre à jour un utilisateur existant (remplacer {id} par un ID existant)
+PUT {{baseUrl}}/users/1
+Content-Type: {{contentType}}
+
+{
+  "username": "johnupdated",
+  "password": "newpassword789",
+  "email": "john.updated@example.com",
+  "firstName": "John",
+  "lastName": "Updated",
+  "birthDate": "1990-05-15",
+  "role": "USER",
+  "iban": "FR1420041010050500013M02606",
+  "signinDate": "2024-01-15T10:30:00",
+  "banned": false
+}
+
+###
+
+### 7. PUT - Tentative de mise à jour d'un utilisateur inexistant (devrait retourner 404)
+PUT {{baseUrl}}/users/999
+Content-Type: {{contentType}}
+
+{
+  "username": "nonexistent",
+  "password": "password123",
+  "email": "nonexistent@example.com",
+  "firstName": "Non",
+  "lastName": "Existent",
+  "birthDate": "1995-01-01",
+  "role": "USER",
+  "iban": "FR1420041010050500013M02606",
+  "signinDate": "2024-01-01T12:00:00",
+  "banned": false
+}
+
+###
+
+### 8. DELETE - Supprimer un utilisateur par ID (remplacer {id} par un ID existant)
+DELETE {{baseUrl}}/users/2
+Accept: {{contentType}}
+
+###
+
+### 9. DELETE - Tentative de suppression d'un utilisateur inexistant (devrait retourner 404)
+DELETE {{baseUrl}}/users/999
+Accept: {{contentType}}
+
+###
+
+### 10. POST - Test de validation - utilisateur avec données invalides
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "a",
+  "password": "b",
+  "email": "invalid-email",
+  "firstName": "",
+  "lastName": "D",
+  "birthDate": "2030-01-01",
+  "role": "INVALID_ROLE",
+  "iban": "invalid-iban",
+  "signinDate": "2030-01-01T12:00:00",
+  "banned": false
+}
+
+###
+
+### 11. POST - Test avec champs manquants
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "incomplete",
+  "email": "incomplete@example.com"
+}
+
+###
+
+### 12. POST - Utilisateur avec date de naissance dans le futur (devrait échouer)
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "futureuser",
+  "password": "password123",
+  "email": "future@example.com",
+  "firstName": "Future",
+  "lastName": "User",
+  "birthDate": "2030-01-01",
+  "role": "USER",
+  "iban": "FR1420041010050500013M02606",
+  "signinDate": "2024-01-15T10:30:00",
+  "banned": false
+}
+
+###
+
+### 13. POST - Utilisateur banni
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "banneduser",
+  "password": "password123",
+  "email": "banned@example.com",
+  "firstName": "Banned",
+  "lastName": "User",
+  "birthDate": "1988-03-10",
+  "role": "USER",
+  "iban": "DE89370400440532013000",
+  "signinDate": "2024-01-01T09:00:00",
+  "banned": true
+}
