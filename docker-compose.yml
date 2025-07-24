@@ -1,0 +1,51 @@
+services:
+  mysql:
+    image: mysql:8.3
+    container_name: eb-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: eb_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - eb-network
+
+  mongodb:
+    image: mongo:7.0
+    container_name: eb-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+      MONGO_INITDB_DATABASE: eb_db
+    ports:
+      - "27017:27017"
+    networks:
+      - eb-network
+    volumes:
+      - mongodb_data:/data/db
+
+  app:
+    build: .
+    container_name: eb-app
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - mongodb
+    ports:
+      - "8080:8080"
+    networks:
+      - eb-network
+
+volumes:
+  mysql_data:
+    driver: local
+  mongodb_data:
+    driver: local
+
+networks:
+  eb-network:
+    driver: bridge
