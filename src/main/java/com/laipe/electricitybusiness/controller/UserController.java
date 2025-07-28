@@ -4,6 +4,7 @@ import com.laipe.electricitybusiness.dto.UserDTO;
 import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.service.UserService;
 import com.laipe.electricitybusiness.utils.ModelUtils;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +30,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> create(@RequestBody User entity) {
+    public ResponseEntity<UserDTO> create(@RequestBody @Valid User entity) {
         return ResponseEntity.ok(ModelUtils.toDTO(service.create(entity)));
     }
 
@@ -50,7 +51,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateById(@PathVariable Long id, @RequestBody User newEntity) {
+    public ResponseEntity<UserDTO> updateById(@PathVariable Long id, @RequestBody @Valid User newEntity) {
         return service.update(newEntity, id)
                 .map(ModelUtils::<User, UserDTO>toDTO)
                 .map(ResponseEntity::ok)
