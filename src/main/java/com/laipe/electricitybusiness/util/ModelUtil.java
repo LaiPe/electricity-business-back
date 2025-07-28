@@ -1,9 +1,9 @@
-package com.laipe.electricitybusiness.utils;
+package com.laipe.electricitybusiness.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-public class ModelUtils {
+public class ModelUtil {
     public static <T> void copyFields(T source, T destination) {
         // Raise exception if given objects are null
         if (source == null || destination == null) {
@@ -104,6 +104,66 @@ public class ModelUtils {
             throw new IllegalArgumentException("DTO class not found: " + dtoClassName, e);
         } catch (Exception e) {
             throw new RuntimeException("Failed to create DTO instance", e);
+        }
+    }
+
+    public static <DTO, T> T toEntity(DTO dto) {
+        // Raise exception if given object is null
+        if (dto == null) {
+            throw new IllegalArgumentException("Given object cannot be null");
+        }
+
+        // Raise exception if given object isn't a DTO
+        Class<?> dtoClass = dto.getClass();
+        String dtoPackage = dtoClass.getPackageName();
+        if (!dtoPackage.endsWith("dto")) {
+            throw new IllegalArgumentException("Given objects must come from dto package");
+        }
+
+        // Create a string with the corresponding entity class name
+        // Remove "DTO" suffix from class name and replace "dto" with "model" in package
+        String dtoSimpleName = dto.getClass().getSimpleName();
+        if (!dtoSimpleName.endsWith("DTO")) {
+            throw new IllegalArgumentException("DTO class name must end with 'DTO'");
+        }
+
+        String entityClassName = dtoPackage.replace("dto", "model") +
+                '.' + dtoSimpleName.substring(0, dtoSimpleName.length() - 3);
+
+        try {
+            // Raise exception if there isn't a class with this name in the model package
+            @SuppressWarnings("unchecked")
+            Class<T> entityClass = (Class<T>) Class.forName(entityClassName);
+
+            // Using reflection, get DTO fields list
+            Field[] dtoFields = dtoClass.getDeclaredFields();
+
+            // Create new entity instance
+            T entity = entityClass.getDeclaredConstructor().newInstance();
+
+            // For each field of the DTO
+            for (Field dtoField : dtoFields) {
+                dtoField.setAccessible(true);
+
+                try {
+                    // If there is in the entity class a field with the same name
+                    Field entityField = entityClass.getDeclaredField(dtoField.getName());
+                    entityField.setAccessible(true);
+
+                    // Copy DTO field value into entity field
+                    Object fieldValue = dtoField.get(dto);
+                    entityField.set(entity, fieldValue);
+
+                } catch (NoSuchFieldException e) {
+                    // Field doesn't exist in Entity, skip it
+                }
+            }
+            return entity;
+
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Entity class not found: " + entityClassName, e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create Entity instance", e);
         }
     }
 }

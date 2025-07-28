@@ -3,7 +3,7 @@ package com.laipe.electricitybusiness.controller;
 import com.laipe.electricitybusiness.dto.UserDTO;
 import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.service.UserService;
-import com.laipe.electricitybusiness.utils.ModelUtils;
+import com.laipe.electricitybusiness.util.ModelUtil;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +23,7 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> getAll() {
         List<UserDTO> dto = service.getAll()
                 .stream()
-                .map(ModelUtils::<User, UserDTO>toDTO)
+                .map(ModelUtil::<User, UserDTO>toDTO)
                 .toList();
 
         return ResponseEntity.ok(dto);
@@ -31,13 +31,13 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDTO> create(@RequestBody @Valid User entity) {
-        return ResponseEntity.ok(ModelUtils.toDTO(service.create(entity)));
+        return ResponseEntity.ok(ModelUtil.toDTO(service.create(entity)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getById(@PathVariable Long id) {
         return service.getById(id)
-                .map(ModelUtils::<User, UserDTO>toDTO)
+                .map(ModelUtil::<User, UserDTO>toDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -45,7 +45,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<UserDTO> deleteById(@PathVariable Long id) {
         return service.deleteById(id)
-                .map(ModelUtils::<User, UserDTO>toDTO)
+                .map(ModelUtil::<User, UserDTO>toDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -53,7 +53,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateById(@PathVariable Long id, @RequestBody @Valid User newEntity) {
         return service.update(newEntity, id)
-                .map(ModelUtils::<User, UserDTO>toDTO)
+                .map(ModelUtil::<User, UserDTO>toDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
 
