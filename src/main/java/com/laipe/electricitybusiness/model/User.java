@@ -53,7 +53,6 @@ public class User {
     @Column(name = "role", nullable = false)
     private UserRole role;
 
-    @NotBlank
     @Size(min = 15,  max = 34)
     @Column(name = "iban", length = 34)
     private String iban;
