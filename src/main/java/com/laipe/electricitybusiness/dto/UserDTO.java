@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class UserDTO {
@@ -17,4 +18,5 @@ public class UserDTO {
     private UserRole role;
     private LocalDateTime signinDate;
     private Boolean banned;
+    private List<VehicleDTO> vehicles;
 }
