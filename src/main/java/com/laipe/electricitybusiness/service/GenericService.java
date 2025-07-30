@@ -1,6 +1,6 @@
 package com.laipe.electricitybusiness.service;
 
-import com.laipe.electricitybusiness.utils.ModelUtils;
+import com.laipe.electricitybusiness.util.ModelUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -39,7 +39,7 @@ public abstract class GenericService<T, ID> {
     public Optional<T> update(T newEntity, ID id) {
         return repository.findById(id)
                 .map(existingEntity -> {
-                    ModelUtils.copyFields(newEntity, existingEntity);
+                    ModelUtil.copyFields(newEntity, existingEntity);
                     return repository.save(existingEntity);
                 });
     }

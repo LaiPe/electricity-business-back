@@ -22,7 +22,8 @@ Content-Type: {{contentType}}
   "role": "USER",
   "iban": "FR1420041010050500013M02606",
   "signinDate": "2024-01-15T10:30:00",
-  "banned": false
+  "banned": false,
+  "vehicles": []
 }
 
 ###
