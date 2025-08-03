@@ -1,176 +1,359 @@
-### Variables
+### Variables d'environnement
 @baseUrl = http://localhost:8080
 @contentType = application/json
 
-### 1. GET - Récupérer tous les utilisateurs
+### ========================================
+### TESTS POUR L'ENDPOINT GET ALL USERS
+### ========================================
+
+### Récupérer tous les utilisateurs
 GET {{baseUrl}}/users
-Accept: {{contentType}}
+Content-Type: {{contentType}}
 
-###
+### ========================================
+### TESTS POUR L'ENDPOINT CREATE USER
+### ========================================
 
-### 2. POST - Créer un nouvel utilisateur
+### Créer un utilisateur valide (ADMIN)
 POST {{baseUrl}}/users
 Content-Type: {{contentType}}
 
 {
-  "username": "johndoe",
-  "password": "securepassword123",
-  "email": "john.doe@example.com",
-  "firstName": "John",
-  "lastName": "Doe",
-  "birthDate": "1990-05-15",
-  "role": "USER",
-  "iban": "FR1420041010050500013M02606",
-  "signinDate": "2024-01-15T10:30:00",
-  "banned": false,
-  "vehicles": []
-}
-
-###
-
-### 3. POST - Créer un utilisateur ADMIN
-POST {{baseUrl}}/users
-Content-Type: {{contentType}}
-
-{
-  "username": "admin",
-  "password": "adminpassword456",
-  "email": "admin@company.com",
-  "firstName": "Alice",
-  "lastName": "Smith",
-  "birthDate": "1985-12-01",
+  "username": "admin_user",
+  "password": "securePassword123",
+  "email": "admin@example.com",
+  "first_name": "John",
+  "last_name": "Doe",
+  "birth_date": "1990-01-15",
   "role": "ADMIN",
-  "iban": "GB29NWBK60161331926819",
-  "signinDate": "2024-01-10T08:00:00",
-  "banned": false
+  "iban": "FR7630001007941234567890185"
 }
 
-###
-
-### 4. GET - Récupérer un utilisateur par ID (remplacer {id} par un ID existant)
-GET {{baseUrl}}/users/1
-Accept: {{contentType}}
-
-###
-
-### 5. GET - Récupérer un utilisateur par ID inexistant (devrait retourner 404)
-GET {{baseUrl}}/users/999
-Accept: {{contentType}}
-
-###
-
-### 6. PUT - Mettre à jour un utilisateur existant (remplacer {id} par un ID existant)
-PUT {{baseUrl}}/users/1
+### Créer un utilisateur valide (USER)
+POST {{baseUrl}}/users
 Content-Type: {{contentType}}
 
 {
-  "username": "johnupdated",
-  "password": "newpassword789",
-  "email": "john.updated@example.com",
-  "firstName": "John",
-  "lastName": "Updated",
-  "birthDate": "1990-05-15",
+  "username": "regular_user",
+  "password": "userPassword456",
+  "email": "user@example.com",
+  "first_name": "Jane",
+  "last_name": "Smith",
+  "birth_date": "1985-06-20",
   "role": "USER",
-  "iban": "FR1420041010050500013M02606",
-  "signinDate": "2024-01-15T10:30:00",
-  "banned": false
+  "iban": "FR7630001007941234567890186"
 }
 
-###
-
-### 7. PUT - Tentative de mise à jour d'un utilisateur inexistant (devrait retourner 404)
-PUT {{baseUrl}}/users/999
+### Créer un utilisateur sans IBAN (optionnel)
+POST {{baseUrl}}/users
 Content-Type: {{contentType}}
 
 {
-  "username": "nonexistent",
-  "password": "password123",
-  "email": "nonexistent@example.com",
-  "firstName": "Non",
-  "lastName": "Existent",
-  "birthDate": "1995-01-01",
-  "role": "USER",
-  "iban": "FR1420041010050500013M02606",
-  "signinDate": "2024-01-01T12:00:00",
-  "banned": false
+  "username": "user_no_iban",
+  "password": "password789",
+  "email": "noiban@example.com",
+  "first_name": "Alice",
+  "last_name": "Johnson",
+  "birth_date": "1992-03-10",
+  "role": "USER"
 }
 
-###
+### ========================================
+### TESTS D'ERREURS POUR CREATE USER
+### ========================================
 
-### 8. DELETE - Supprimer un utilisateur par ID (remplacer {id} par un ID existant)
-DELETE {{baseUrl}}/users/2
-Accept: {{contentType}}
-
-###
-
-### 9. DELETE - Tentative de suppression d'un utilisateur inexistant (devrait retourner 404)
-DELETE {{baseUrl}}/users/999
-Accept: {{contentType}}
-
-###
-
-### 10. POST - Test de validation - utilisateur avec données invalides
+### Test avec username trop court (erreur de validation)
 POST {{baseUrl}}/users
 Content-Type: {{contentType}}
 
 {
   "username": "a",
-  "password": "b",
+  "password": "password123",
+  "email": "test@example.com",
+  "first_name": "Test",
+  "last_name": "User",
+  "birth_date": "1990-01-01",
+  "role": "USER"
+}
+
+### Test avec email invalide
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser",
+  "password": "password123",
   "email": "invalid-email",
-  "firstName": "",
-  "lastName": "D",
-  "birthDate": "2030-01-01",
-  "role": "INVALID_ROLE",
-  "iban": "invalid-iban",
-  "signinDate": "2030-01-01T12:00:00",
-  "banned": false
+  "first_name": "Test",
+  "last_name": "User",
+  "birth_date": "1990-01-01",
+  "role": "USER"
 }
 
-###
-
-### 11. POST - Test avec champs manquants
+### Test avec date de naissance future (erreur de validation)
 POST {{baseUrl}}/users
 Content-Type: {{contentType}}
 
 {
-  "username": "incomplete",
-  "email": "incomplete@example.com"
-}
-
-###
-
-### 12. POST - Utilisateur avec date de naissance dans le futur (devrait échouer)
-POST {{baseUrl}}/users
-Content-Type: {{contentType}}
-
-{
-  "username": "futureuser",
+  "username": "future_user",
   "password": "password123",
   "email": "future@example.com",
-  "firstName": "Future",
-  "lastName": "User",
-  "birthDate": "2030-01-01",
-  "role": "USER",
-  "iban": "FR1420041010050500013M02606",
-  "signinDate": "2024-01-15T10:30:00",
-  "banned": false
+  "first_name": "Future",
+  "last_name": "User",
+  "birth_date": "2030-01-01",
+  "role": "USER"
 }
 
-###
-
-### 13. POST - Utilisateur banni
+### Test avec IBAN invalide (trop court)
 POST {{baseUrl}}/users
 Content-Type: {{contentType}}
 
 {
-  "username": "banneduser",
+  "username": "iban_user",
   "password": "password123",
-  "email": "banned@example.com",
-  "firstName": "Banned",
-  "lastName": "User",
-  "birthDate": "1988-03-10",
+  "email": "iban@example.com",
+  "first_name": "Iban",
+  "last_name": "User",
+  "birth_date": "1990-01-01",
   "role": "USER",
-  "iban": "DE89370400440532013000",
-  "signinDate": "2024-01-01T09:00:00",
-  "banned": true
+  "iban": "FR123"
+}
+
+### Test avec champs manquants
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "incomplete_user",
+  "password": "password123"
+}
+
+### Test avec JSON malformé
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "malformed_user",
+  "password": "password123",
+  "email": "test@example.com",
+  "first_name": "Test",
+  "last_name": "User",
+  "birth_date": "1990-01-01",
+  "role": "USER",
+  "iban": "FR7630001007941234567890185"
+}
+
+### ========================================
+### TESTS POUR L'ENDPOINT GET USER BY ID
+### ========================================
+
+### Récupérer un utilisateur existant (remplacer {id} par un ID réel)
+GET {{baseUrl}}/users/1
+Content-Type: {{contentType}}
+
+### Récupérer un autre utilisateur
+GET {{baseUrl}}/users/2
+Content-Type: {{contentType}}
+
+### ========================================
+### TESTS D'ERREURS POUR GET USER BY ID
+### ========================================
+
+### Test avec ID inexistant (404)
+GET {{baseUrl}}/users/999
+Content-Type: {{contentType}}
+
+### Test avec ID invalide (non numérique)
+GET {{baseUrl}}/users/abc
+Content-Type: {{contentType}}
+
+### Test avec ID négatif
+GET {{baseUrl}}/users/-1
+Content-Type: {{contentType}}
+
+### ========================================
+### TESTS POUR L'ENDPOINT UPDATE USER
+### ========================================
+
+### Mettre à jour un utilisateur existant (remplacer {id} par un ID réel)
+PUT {{baseUrl}}/users/1
+Content-Type: {{contentType}}
+
+{
+  "username": "updated_admin",
+  "password": "newSecurePassword123",
+  "email": "updated.admin@example.com",
+  "first_name": "John",
+  "last_name": "Doe",
+  "birth_date": "1990-01-15",
+  "role": "ADMIN",
+  "iban": "FR7630001007941234567890187"
+}
+
+### Mettre à jour un utilisateur en changeant le rôle
+PUT {{baseUrl}}/users/2
+Content-Type: {{contentType}}
+
+{
+  "username": "promoted_user",
+  "password": "userPassword456",
+  "email": "promoted@example.com",
+  "first_name": "Jane",
+  "last_name": "Smith",
+  "birth_date": "1985-06-20",
+  "role": "ADMIN",
+  "iban": "FR7630001007941234567890188"
+}
+
+### ========================================
+### TESTS D'ERREURS POUR UPDATE USER
+### ========================================
+
+### Test de mise à jour avec ID inexistant (404)
+PUT {{baseUrl}}/users/999
+Content-Type: {{contentType}}
+
+{
+  "username": "nonexistent_user",
+  "password": "password123",
+  "email": "nonexistent@example.com",
+  "first_name": "Nonexistent",
+  "last_name": "User",
+  "birth_date": "1990-01-01",
+  "role": "USER"
+}
+
+### Test de mise à jour avec données invalides
+PUT {{baseUrl}}/users/1
+Content-Type: {{contentType}}
+
+{
+  "username": "a",
+  "password": "password123",
+  "email": "invalid-email",
+  "first_name": "Test",
+  "last_name": "User",
+  "birth_date": "2030-01-01",
+  "role": "USER"
+}
+
+### ========================================
+### TESTS POUR L'ENDPOINT DELETE USER
+### ========================================
+
+### Supprimer un utilisateur existant (remplacer {id} par un ID réel)
+DELETE {{baseUrl}}/users/3
+Content-Type: {{contentType}}
+
+### ========================================
+### TESTS D'ERREURS POUR DELETE USER
+### ========================================
+
+### Test de suppression avec ID inexistant (404)
+DELETE {{baseUrl}}/users/999
+Content-Type: {{contentType}}
+
+### Test de suppression avec ID invalide
+DELETE {{baseUrl}}/users/abc
+Content-Type: {{contentType}}
+
+### ========================================
+### TESTS DE PERFORMANCE ET STRESS
+### ========================================
+
+### Test de récupération multiple
+GET {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+### Test de création rapide de plusieurs utilisateurs
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "stress_test_user_1",
+  "password": "password123",
+  "email": "stress1@example.com",
+  "first_name": "Stress",
+  "last_name": "Test1",
+  "birth_date": "1990-01-01",
+  "role": "USER"
+}
+
+### ========================================
+### TESTS DE CAS LIMITES
+### ========================================
+
+### Test avec username de longueur maximale
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "verylongusernamewithhundredcharactersexactlytoreachthelimitofonehundredcharacters",
+  "password": "password123",
+  "email": "longusername@example.com",
+  "first_name": "Long",
+  "last_name": "Username",
+  "birth_date": "1990-01-01",
+  "role": "USER"
+}
+
+### Test avec IBAN de longueur maximale
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "max_iban_user",
+  "password": "password123",
+  "email": "maxiban@example.com",
+  "first_name": "Max",
+  "last_name": "Iban",
+  "birth_date": "1990-01-01",
+  "role": "USER",
+  "iban": "FR7630001007941234567890189ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+}
+
+### Test avec date de naissance très ancienne
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "old_user",
+  "password": "password123",
+  "email": "old@example.com",
+  "first_name": "Old",
+  "last_name": "User",
+  "birth_date": "1900-01-01",
+  "role": "USER"
+}
+
+### ========================================
+### TESTS DE SÉCURITÉ
+### ========================================
+
+### Test avec caractères spéciaux dans les champs
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "special_chars_user",
+  "password": "password123",
+  "email": "special@example.com",
+  "first_name": "Special<>\"'&",
+  "last_name": "Chars!@#$%",
+  "birth_date": "1990-01-01",
+  "role": "USER"
+}
+
+### Test avec injection SQL potentielle
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "username": "'; DROP TABLE users; --",
+  "password": "password123",
+  "email": "sql@example.com",
+  "first_name": "SQL",
+  "last_name": "Injection",
+  "birth_date": "1990-01-01",
+  "role": "USER"
 }

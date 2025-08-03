@@ -1,10 +1,11 @@
-package com.laipe.electricitybusiness.dto;
+package com.laipe.electricitybusiness.dto.vehicle;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.laipe.electricitybusiness.model.VehicleModel;
 import lombok.Data;
 
 @Data
-public class VehicleDTO {
+public class GetVehicleDTO {
     @JsonProperty("id")
     private Long id;
 
@@ -14,6 +15,6 @@ public class VehicleDTO {
     @JsonProperty("owner_id")
     private Long ownerId;
 
-    @JsonProperty("vehicle_model_id")
-    private String vehicleModelId;
+    @JsonProperty("vehicle_model")
+    private VehicleModel vehicleModel;
 }

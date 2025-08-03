@@ -1,7 +1,7 @@
 package com.laipe.electricitybusiness.controller;
 
-import com.laipe.electricitybusiness.dto.GetVehicleDTO;
-import com.laipe.electricitybusiness.dto.VehicleDTO;
+import com.laipe.electricitybusiness.dto.vehicle.GetVehicleDTO;
+import com.laipe.electricitybusiness.dto.vehicle.PostVehicleDTO;
 import com.laipe.electricitybusiness.model.Vehicle;
 import com.laipe.electricitybusiness.service.VehicleModelService;
 import com.laipe.electricitybusiness.service.VehicleService;
@@ -37,8 +37,8 @@ public class VehicleController {
     }
 
     @PostMapping
-    public ResponseEntity<GetVehicleDTO> create(@RequestBody VehicleDTO inputDto) {
-        Vehicle entity = mapper.dtoToEntityWithOwner(inputDto);
+    public ResponseEntity<GetVehicleDTO> create(@RequestBody PostVehicleDTO inputDto) {
+        Vehicle entity = mapper.dtoToEntity(inputDto);
         GetVehicleDTO dto = mapper.entityToDto(vehicleService.create(entity));
         vehicleModelService.getById(dto.getVehicleModel().getId()).ifPresent(dto::setVehicleModel);
         return ResponseEntity.ok(dto);
@@ -71,8 +71,8 @@ public class VehicleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GetVehicleDTO> updateById(@PathVariable Long id, @RequestBody VehicleDTO inputDto) {
-        return vehicleService.update(mapper.dtoToEntityWithOwner(inputDto), id)
+    public ResponseEntity<GetVehicleDTO> updateById(@PathVariable Long id, @RequestBody PostVehicleDTO inputDto) {
+        return vehicleService.update(mapper.dtoToEntity(inputDto), id)
                 .map(mapper::entityToDto)
                 .map(vehicleDto -> {
                     vehicleModelService.getById(vehicleDto.getVehicleModel().getId())

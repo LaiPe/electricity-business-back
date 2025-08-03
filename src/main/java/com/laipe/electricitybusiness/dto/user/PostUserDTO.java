@@ -1,20 +1,18 @@
-package com.laipe.electricitybusiness.dto;
+package com.laipe.electricitybusiness.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.laipe.electricitybusiness.model.UserRole;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
-public class UserDTO {
-    @JsonProperty("id")
-    private Long id;
-
+public class PostUserDTO {
     @JsonProperty("username")
     private String username;
+
+    @JsonProperty("password")
+    private String password;
 
     @JsonProperty("email")
     private String email;
@@ -31,12 +29,6 @@ public class UserDTO {
     @JsonProperty("role")
     private UserRole role;
 
-    @JsonProperty("signin_date")
-    private LocalDateTime signinDate;
-
-    @JsonProperty("banned")
-    private Boolean banned;
-
-    @JsonProperty("vehicles")
-    private List<GetVehicleDTO> vehicles;
+    @JsonProperty("iban")
+    private String iban;
 }

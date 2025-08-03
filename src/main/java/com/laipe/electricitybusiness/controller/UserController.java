@@ -1,7 +1,7 @@
 package com.laipe.electricitybusiness.controller;
 
-import com.laipe.electricitybusiness.dto.UserDTO;
-import com.laipe.electricitybusiness.model.User;
+import com.laipe.electricitybusiness.dto.user.GetUserDTO;
+import com.laipe.electricitybusiness.dto.user.PostUserDTO;
 import com.laipe.electricitybusiness.service.UserService;
 import com.laipe.electricitybusiness.util.EntityDtoMapper;
 import jakarta.validation.Valid;
@@ -20,8 +20,8 @@ public class UserController {
     private final EntityDtoMapper mapper;
 
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getAll() {
-        List<UserDTO> dto = service.getAll()
+    public ResponseEntity<List<GetUserDTO>> getAll() {
+        List<GetUserDTO> dto = service.getAll()
                 .stream()
                 .map(mapper::entityToDto)
                 .toList();
@@ -30,12 +30,12 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> create(@RequestBody @Valid User entity) {
-        return ResponseEntity.ok(mapper.entityToDto(service.create(entity)));
+    public ResponseEntity<GetUserDTO> create(@RequestBody @Valid PostUserDTO postUserDTO) {
+        return ResponseEntity.ok(mapper.entityToDto(service.create(mapper.dtoToEntity(postUserDTO))));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<GetUserDTO> getById(@PathVariable Long id) {
         return service.getById(id)
                 .map(mapper::entityToDto)
                 .map(ResponseEntity::ok)
@@ -43,7 +43,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<UserDTO> deleteById(@PathVariable Long id) {
+    public ResponseEntity<GetUserDTO> deleteById(@PathVariable Long id) {
         return service.deleteById(id)
                 .map(mapper::entityToDto)
                 .map(ResponseEntity::ok)
@@ -51,8 +51,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateById(@PathVariable Long id, @RequestBody @Valid User newEntity) {
-        return service.update(newEntity, id)
+    public ResponseEntity<GetUserDTO> updateById(@PathVariable Long id, @RequestBody @Valid PostUserDTO postUserDTO) {
+        return service.update(mapper.dtoToEntity(postUserDTO), id)
                 .map(mapper::entityToDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
