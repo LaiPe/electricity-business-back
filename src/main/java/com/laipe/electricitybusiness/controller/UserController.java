@@ -2,6 +2,7 @@ package com.laipe.electricitybusiness.controller;
 
 import com.laipe.electricitybusiness.dto.user.GetUserDTO;
 import com.laipe.electricitybusiness.dto.user.PostUserDTO;
+import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.service.UserService;
 import com.laipe.electricitybusiness.util.EntityDtoMapper;
 import jakarta.validation.Valid;
@@ -35,11 +36,11 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GetUserDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<GetUserDTO> getById(@PathVariable Long id) throws ResourceNotFoundException {
         return service.getById(id)
                 .map(mapper::entityToDto)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
     }
 
     @DeleteMapping("/{id}")
@@ -47,7 +48,7 @@ public class UserController {
         return service.deleteById(id)
                 .map(mapper::entityToDto)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
     }
 
     @PutMapping("/{id}")
@@ -55,7 +56,7 @@ public class UserController {
         return service.update(mapper.dtoToEntity(postUserDTO), id)
                 .map(mapper::entityToDto)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
 
     }
 }
