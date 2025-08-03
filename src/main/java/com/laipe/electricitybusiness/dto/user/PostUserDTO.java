@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.laipe.electricitybusiness.model.UserRole;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -15,10 +12,12 @@ import java.time.LocalDate;
 @Data
 public class PostUserDTO {
     @NotBlank
+    @Size(min = 2, max = 100)
     @JsonProperty("username")
     private String username;
 
     @NotBlank
+    @Size(min = 2, max = 100)
     @JsonProperty("password")
     private String password;
 
@@ -28,10 +27,12 @@ public class PostUserDTO {
     private String email;
 
     @NotBlank
+    @Size(min = 2, max = 100)
     @JsonProperty("first_name")
     private String firstName;
 
     @NotBlank
+    @Size(min = 2, max = 100)
     @JsonProperty("last_name")
     private String lastName;
 
@@ -45,6 +46,7 @@ public class PostUserDTO {
     @JsonProperty("role")
     private UserRole role;
 
+    @Size(min = 15,  max = 34)
     @JsonProperty("iban")
     private String iban;
 }
