@@ -1,4 +1,4 @@
-package com.laipe.electricitybusiness.controller;
+package com.laipe.electricitybusiness.controller.handler;
 
 import lombok.Getter;
 
@@ -16,6 +16,6 @@ public class ResourceNotFoundException extends RuntimeException {
 
   @Override
   public String toString() {
-    return "ResourceNotFoundException resulting to sending 404 response with message : \"" + this.getMessage() + "\"";
+    return "ResourceNotFoundException resulting to sending 404 response with message : '" + this.getMessage() + "'";
   }
 }

@@ -1,4 +1,4 @@
-package com.laipe.electricitybusiness.service;
+package com.laipe.electricitybusiness.service.generic;
 
 import com.laipe.electricitybusiness.util.ModelUtil;
 import jakarta.transaction.Transactional;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @AllArgsConstructor
-public abstract class GenericService<T, ID> {
+public abstract class GenericJPAService<T, ID> implements GenericService<T, ID> {
 
     private final JpaRepository<T, ID> repository;
 

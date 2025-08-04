@@ -2,17 +2,11 @@
 @baseUrl = http://localhost:8080
 @contentType = application/json
 
-### ========================================
-### TESTS POUR L'ENDPOINT GET ALL USERS
-### ========================================
 
 ### Récupérer tous les utilisateurs
 GET {{baseUrl}}/users
 Content-Type: {{contentType}}
 
-### ========================================
-### TESTS POUR L'ENDPOINT CREATE USER
-### ========================================
 
 ### Créer un utilisateur valide (ADMIN)
 POST {{baseUrl}}/users
@@ -58,9 +52,6 @@ Content-Type: {{contentType}}
   "role": "USER"
 }
 
-### ========================================
-### TESTS D'ERREURS POUR CREATE USER
-### ========================================
 
 ### Test avec username trop court (erreur de validation)
 POST {{baseUrl}}/users
@@ -143,9 +134,6 @@ Content-Type: {{contentType}}
   "iban": "FR7630001007941234567890185"
 }
 
-### ========================================
-### TESTS POUR L'ENDPOINT GET USER BY ID
-### ========================================
 
 ### Récupérer un utilisateur existant (remplacer {id} par un ID réel)
 GET {{baseUrl}}/users/1
@@ -155,9 +143,6 @@ Content-Type: {{contentType}}
 GET {{baseUrl}}/users/2
 Content-Type: {{contentType}}
 
-### ========================================
-### TESTS D'ERREURS POUR GET USER BY ID
-### ========================================
 
 ### Test avec ID inexistant (404)
 GET {{baseUrl}}/users/999
@@ -171,9 +156,6 @@ Content-Type: {{contentType}}
 GET {{baseUrl}}/users/-1
 Content-Type: {{contentType}}
 
-### ========================================
-### TESTS POUR L'ENDPOINT UPDATE USER
-### ========================================
 
 ### Mettre à jour un utilisateur existant (remplacer {id} par un ID réel)
 PUT {{baseUrl}}/users/1
@@ -205,9 +187,6 @@ Content-Type: {{contentType}}
   "iban": "FR7630001007941234567890188"
 }
 
-### ========================================
-### TESTS D'ERREURS POUR UPDATE USER
-### ========================================
 
 ### Test de mise à jour avec ID inexistant (404)
 PUT {{baseUrl}}/users/999
@@ -237,17 +216,11 @@ Content-Type: {{contentType}}
   "role": "USER"
 }
 
-### ========================================
-### TESTS POUR L'ENDPOINT DELETE USER
-### ========================================
 
 ### Supprimer un utilisateur existant (remplacer {id} par un ID réel)
 DELETE {{baseUrl}}/users/3
 Content-Type: {{contentType}}
 
-### ========================================
-### TESTS D'ERREURS POUR DELETE USER
-### ========================================
 
 ### Test de suppression avec ID inexistant (404)
 DELETE {{baseUrl}}/users/999
@@ -257,9 +230,6 @@ Content-Type: {{contentType}}
 DELETE {{baseUrl}}/users/abc
 Content-Type: {{contentType}}
 
-### ========================================
-### TESTS DE PERFORMANCE ET STRESS
-### ========================================
 
 ### Test de récupération multiple
 GET {{baseUrl}}/users
@@ -279,9 +249,6 @@ Content-Type: {{contentType}}
   "role": "USER"
 }
 
-### ========================================
-### TESTS DE CAS LIMITES
-### ========================================
 
 ### Test avec username de longueur maximale
 POST {{baseUrl}}/users
@@ -326,9 +293,6 @@ Content-Type: {{contentType}}
   "role": "USER"
 }
 
-### ========================================
-### TESTS DE SÉCURITÉ
-### ========================================
 
 ### Test avec caractères spéciaux dans les champs
 POST {{baseUrl}}/users
