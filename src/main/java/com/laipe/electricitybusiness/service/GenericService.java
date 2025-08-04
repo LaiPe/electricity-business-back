@@ -2,18 +2,17 @@ package com.laipe.electricitybusiness.service;
 
 import com.laipe.electricitybusiness.util.ModelUtil;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-
+@AllArgsConstructor
 public abstract class GenericService<T, ID> {
+
     private final JpaRepository<T, ID> repository;
 
-    protected GenericService(JpaRepository<T, ID> repository) {
-        this.repository = repository;
-    }
 
     @Transactional
     public T create(T entity) {
