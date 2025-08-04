@@ -1,6 +1,6 @@
 package com.laipe.electricitybusiness.service;
 
-import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
+import com.laipe.electricitybusiness.controller.handler.IntegrityConstraintViolationException;
 import com.laipe.electricitybusiness.model.Vehicle;
 import com.laipe.electricitybusiness.model.VehicleModel;
 import com.laipe.electricitybusiness.repository.VehicleModelRepository;
@@ -25,14 +25,14 @@ public class VehicleService extends GenericJPAService<Vehicle, Long> {
     @Override
     public Vehicle create(Vehicle entity) {
         vehicleModelRepository.findById(entity.getVehicleModelId())
-            .orElseThrow(() -> new ResourceNotFoundException(entity.getVehicleModelId(), VehicleModel.class));
+            .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", entity.getVehicleModelId(), VehicleModel.class));
         return super.create(entity);
     }
 
     @Override
     public Optional<Vehicle> update(Vehicle entity, Long id) {
         vehicleModelRepository.findById(entity.getVehicleModelId())
-                .orElseThrow(() -> new ResourceNotFoundException(entity.getVehicleModelId(), VehicleModel.class));
+                .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", entity.getVehicleModelId(), VehicleModel.class));
         return super.update(entity, id);
     }
 }

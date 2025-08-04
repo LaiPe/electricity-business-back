@@ -24,6 +24,12 @@ public class ControllerExceptionHandler {
                 .body(new ErrorResponse("Data constraint violation. Please check required fields, their formats and values."));
     }
 
+    @ExceptionHandler(IntegrityConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleIntegrityConstraintViolationException(final IntegrityConstraintViolationException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(exception.getMessage()));
+    }
+
     @Getter
     @AllArgsConstructor
     public static class ErrorResponse {

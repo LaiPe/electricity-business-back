@@ -1,6 +1,7 @@
 package com.laipe.electricitybusiness.controller;
 
 import com.laipe.electricitybusiness.controller.generic.GenericCreateController;
+import com.laipe.electricitybusiness.controller.handler.IntegrityConstraintViolationException;
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
 import com.laipe.electricitybusiness.dto.vehicle.GetVehicleDTO;
 import com.laipe.electricitybusiness.dto.vehicle.GetVehicleMapper;
@@ -57,7 +58,7 @@ public class VehicleController {
 
         String modelId = vehicleDTO.getVehicleModel().getId();
         VehicleModel model = vehicleModelService.getById(modelId)
-                .orElseThrow(() -> new ResourceNotFoundException(modelId, VehicleModel.class));
+                .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", modelId, VehicleModel.class));
 
         vehicleDTO.setVehicleModel(model);
         return vehicleDTO;
