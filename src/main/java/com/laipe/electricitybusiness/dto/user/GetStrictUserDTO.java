@@ -1,16 +1,14 @@
 package com.laipe.electricitybusiness.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.laipe.electricitybusiness.dto.vehicle.GetVehicleDTO;
 import com.laipe.electricitybusiness.model.UserRole;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
-public class GetUserDTO {
+public class GetStrictUserDTO {
     @JsonProperty("id")
     private Long id;
 
@@ -37,7 +35,4 @@ public class GetUserDTO {
 
     @JsonProperty("banned")
     private Boolean banned;
-
-    @JsonProperty("vehicles")
-    private List<GetVehicleDTO> vehicles;
 }

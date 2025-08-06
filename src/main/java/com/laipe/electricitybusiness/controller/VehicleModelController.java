@@ -16,13 +16,14 @@ import java.util.List;
 @RequestMapping("/vehicles/models")
 public class VehicleModelController {
 
-    private final GenericReadController<VehicleModel, VehicleModel, String> readController;
+    private final GenericReadController<VehicleModel, VehicleModel, VehicleModel, String> readController;
 
     public VehicleModelController(
             VehicleModelService service
     ) {
         this.readController = new GenericReadController<>(
                 service,
+                new NoMapper<>(),
                 new NoMapper<>(),
                 VehicleModel.class
         ){};
