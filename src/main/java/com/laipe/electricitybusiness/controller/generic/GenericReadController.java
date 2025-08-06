@@ -10,24 +10,25 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
 
 @AllArgsConstructor
-public abstract class GenericReadController<T, DTO, ID> {
+public abstract class GenericReadController<T, allDTO, byIdDTO, ID> {
 
-    protected final GenericService<T, ID> service;
-    protected final GenericDTOMapper<T, DTO> mapper;
-    protected final Class<T> entityClass;
+    private final GenericService<T, ID> service;
+    private final GenericDTOMapper<T, allDTO> allMapper;
+    private final GenericDTOMapper<T, byIdDTO> byIdMapper;
+    private final Class<T> entityClass;
 
-    public ResponseEntity<List<DTO>> getAll() {
-        List<DTO> dto = service.getAll()
+    public ResponseEntity<List<allDTO>> getAll() {
+        List<allDTO> dto = service.getAll()
                 .stream()
-                .map(mapper::toDto)
+                .map(allMapper::toDto)
                 .toList();
 
         return ResponseEntity.ok(dto);
     }
 
-    public ResponseEntity<DTO> getById(@PathVariable ID id) throws ResourceNotFoundException {
+    public ResponseEntity<byIdDTO> getById(@PathVariable ID id) throws ResourceNotFoundException {
         return service.getById(id)
-                .map(mapper::toDto)
+                .map(byIdMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ResourceNotFoundException(id, entityClass));
     }

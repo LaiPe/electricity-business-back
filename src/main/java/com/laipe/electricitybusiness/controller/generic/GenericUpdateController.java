@@ -17,7 +17,7 @@ public abstract class GenericUpdateController<T, GetDTO, PostDTO, ID> {
     protected final GenericDTOMapper<T, PostDTO> postMapper;
     protected final Class<T> entityClass;
 
-    public ResponseEntity<GetDTO> updateById(@PathVariable ID id, @RequestBody @Valid PostDTO postDTO) {
+    public ResponseEntity<GetDTO> updateById(@PathVariable ID id, @RequestBody @Valid PostDTO postDTO) throws ResourceNotFoundException {
         return service.update(postMapper.toEntity(postDTO), id)
                 .map(getMapper::toDto)
                 .map(ResponseEntity::ok)

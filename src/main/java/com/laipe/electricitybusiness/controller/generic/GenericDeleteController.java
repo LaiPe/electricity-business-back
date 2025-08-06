@@ -14,7 +14,7 @@ public abstract class GenericDeleteController<T, GetDTO, ID> {
     protected final GenericDTOMapper<T, GetDTO> mapper;
     protected final Class<T> entityClass;
 
-    public ResponseEntity<GetDTO> deleteById(@PathVariable ID id) {
+    public ResponseEntity<GetDTO> deleteById(@PathVariable ID id) throws ResourceNotFoundException {
         return service.deleteById(id)
                 .map(mapper::toDto)
                 .map(ResponseEntity::ok)
