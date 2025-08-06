@@ -1,9 +1,11 @@
 package com.laipe.electricitybusiness.service;
 
+import com.laipe.electricitybusiness.controller.handler.IntegrityConstraintViolationException;
 import com.laipe.electricitybusiness.model.Vehicle;
+import com.laipe.electricitybusiness.model.VehicleModel;
 import com.laipe.electricitybusiness.repository.VehicleModelRepository;
 import com.laipe.electricitybusiness.repository.VehicleRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.laipe.electricitybusiness.service.generic.GenericJPAService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -11,30 +13,26 @@ import java.util.Optional;
 
 @Service
 @Transactional
-public class VehicleService extends GenericService<Vehicle, Long> {
+public class VehicleService extends GenericJPAService<Vehicle, Long> {
 
     private final VehicleModelRepository vehicleModelRepository;
 
-    protected VehicleService(VehicleRepository repository,  VehicleModelRepository vehicleModelRepository) {
-        super(repository);
+    protected VehicleService(VehicleRepository vehicleRepository,  VehicleModelRepository vehicleModelRepository) {
+        super(vehicleRepository);
         this.vehicleModelRepository = vehicleModelRepository;
     }
 
     @Override
     public Vehicle create(Vehicle entity) {
-        if (entity.getVehicleModelId() != null) {
-            vehicleModelRepository.findById(entity.getVehicleModelId())
-                .orElseThrow(() -> new EntityNotFoundException("Vehicle model not found"));
-        }
+        vehicleModelRepository.findById(entity.getVehicleModelId())
+            .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", entity.getVehicleModelId(), VehicleModel.class));
         return super.create(entity);
     }
 
     @Override
     public Optional<Vehicle> update(Vehicle entity, Long id) {
-        if (entity.getVehicleModelId() != null) {
-            vehicleModelRepository.findById(entity.getVehicleModelId())
-                    .orElseThrow(() -> new EntityNotFoundException("Vehicle model not found"));
-        }
+        vehicleModelRepository.findById(entity.getVehicleModelId())
+                .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", entity.getVehicleModelId(), VehicleModel.class));
         return super.update(entity, id);
     }
 }

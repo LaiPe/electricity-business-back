@@ -1,6 +1,7 @@
-package com.laipe.electricitybusiness.dto;
+package com.laipe.electricitybusiness.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.laipe.electricitybusiness.dto.vehicle.GetVehicleDTO;
 import com.laipe.electricitybusiness.model.UserRole;
 import lombok.Data;
 
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class UserDTO {
+public class GetUserDTO {
     @JsonProperty("id")
     private Long id;
 
