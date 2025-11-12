@@ -1,0 +1,139 @@
+### Variables d'environnement
+@baseUrl = http://localhost:8080
+@contentType = application/json
+# Remplacez cette valeur par un id réel de VehicleModel présent en base (généré par Mongo au démarrage)
+@vehicleModelId = 68efa9b044700c7422b64ade
+
+
+### Récupérer tous les véhicules
+GET {{baseUrl}}/vehicles
+Content-Type: {{contentType}}
+
+
+### Créer un véhicule valide
+POST {{baseUrl}}/vehicles
+Content-Type: {{contentType}}
+
+{
+  "registration_number": "AB-123-CD",
+  "owner_id": 1,
+  "vehicle_model_id": "{{vehicleModelId}}"
+}
+
+
+### Créer un véhicule - registration_number trop court (erreur de validation)
+POST {{baseUrl}}/vehicles
+Content-Type: {{contentType}}
+
+{
+  "registration_number": "A",
+  "owner_id": 1,
+  "vehicle_model_id": "{{vehicleModelId}}"
+}
+
+
+### Créer un véhicule - owner_id invalide (min 1)
+POST {{baseUrl}}/vehicles
+Content-Type: {{contentType}}
+
+{
+  "registration_number": "VALID-REG",
+  "owner_id": 0,
+  "vehicle_model_id": "{{vehicleModelId}}"
+}
+
+
+### Créer un véhicule - vehicle_model_id manquant (erreur de validation)
+POST {{baseUrl}}/vehicles
+Content-Type: {{contentType}}
+
+{
+  "registration_number": "VALID-REG",
+  "owner_id": 2
+}
+
+
+### Créer un véhicule - vehicle_model_id invalide (contrainte d'intégrité attendue)
+POST {{baseUrl}}/vehicles
+Content-Type: {{contentType}}
+
+{
+  "registration_number": "VALID-REG",
+  "owner_id": 2,
+  "vehicle_model_id": "non-existent-model-id"
+}
+
+
+### Récupérer un véhicule existant (remplacer {{vehicleId}} par l'id renvoyé lors de la création)
+GET {{baseUrl}}/vehicles/2
+Content-Type: {{contentType}}
+
+
+### Récupérer un véhicule - id inexistant (404 attendu)
+GET {{baseUrl}}/vehicles/999999
+Content-Type: {{contentType}}
+
+
+### Récupérer un véhicule - id non numérique (erreur de parsing / 400 attendu)
+GET {{baseUrl}}/vehicles/abc
+Content-Type: {{contentType}}
+
+
+### Mettre à jour un véhicule existant (remplacer {{vehicleId}} par un id réel)
+PUT {{baseUrl}}/vehicles/2
+Content-Type: {{contentType}}
+
+{
+  "registration_number": "UPDATED-123",
+  "owner_id": 1,
+  "vehicle_model_id": "{{vehicleModelId}}"
+}
+
+
+### Mettre à jour un véhicule - données invalides (registration_number trop long)
+PUT {{baseUrl}}/vehicles/2
+Content-Type: {{contentType}}
+
+{
+  "registration_number": "THIS-REGISTRATION-NUMBER-IS-WAY-TOO-LONG",
+  "owner_id": 1,
+  "vehicle_model_id": "{{vehicleModelId}}"
+}
+
+
+### Supprimer un véhicule existant (remplacer {{vehicleId}} par un id réel)
+DELETE {{baseUrl}}/vehicles/2
+Content-Type: {{contentType}}
+
+
+### Supprimer un véhicule - id inexistant (404 attendu)
+DELETE {{baseUrl}}/vehicles/999999
+Content-Type: {{contentType}}
+
+
+### Cas JSON malformé
+POST {{baseUrl}}/vehicles
+Content-Type: {{contentType}}
+
+{
+  "registration_number": "MALFORMED",
+  "owner_id": 1,
+  "vehicle_model_id": "{{vehicleModelId}}"
+  // missing closing brace intentionally to test malformed JSON
+
+
+### Test de création multiple rapide
+POST {{baseUrl}}/vehicles
+Content-Type: {{contentType}}
+
+{
+  "registration_number": "QUICK-001",
+  "owner_id": 3,
+  "vehicle_model_id": "{{vehicleModelId}}"
+}
+
+
+### Conseils :
+# - Si vous ne connaissez pas d'ID de VehicleModel, démarrez l'application et exécutez une requête GET sur /vehicles/models (ou inspectez la collection Mongo `vehicle_model`) pour récupérer un id.
+# - Après création d'un véhicule, copiez l'id renvoyé (champ `id`) et remplacez {{vehicleId}} pour tester GET/PUT/DELETE.
+# - Le contrôleur valide : registration_number (2..15 chars), owner_id (min 1) et vehicle_model_id (not blank).

@@ -1,6 +1,5 @@
 package com.laipe.electricitybusiness.controller;
 
-import com.laipe.electricitybusiness.controller.generic.GenericCreateController;
 import com.laipe.electricitybusiness.controller.handler.IntegrityConstraintViolationException;
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
 import com.laipe.electricitybusiness.dto.vehicle.GetVehicleDTO;
@@ -12,46 +11,22 @@ import com.laipe.electricitybusiness.model.VehicleModel;
 import com.laipe.electricitybusiness.service.VehicleModelService;
 import com.laipe.electricitybusiness.service.VehicleService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@AllArgsConstructor
 @RestController()
 @RequestMapping("/vehicles")
 public class VehicleController {
-
-    private final GenericCreateController<Vehicle, GetVehicleDTO, PostVehicleDTO,Long> createController;
 
     private final VehicleService vehicleService;
     private final VehicleModelService vehicleModelService;
     private final GetVehicleMapper getVehicleMapper;
     private final PostVehicleMapper postVehicleMapper;
-
-    public VehicleController(
-            VehicleService vehicleService,
-            VehicleModelService vehicleModelService,
-            GetVehicleMapper getVehicleMapper,
-            PostVehicleMapper postVehicleMapper
-    ) {
-        this.createController = new GenericCreateController<>(
-                vehicleService,
-                getVehicleMapper,
-                postVehicleMapper
-        ){};
-
-
-        this.vehicleService = vehicleService;
-        this.vehicleModelService = vehicleModelService;
-        this.getVehicleMapper = getVehicleMapper;
-        this.postVehicleMapper = postVehicleMapper;
-    }
-
-
-    @PostMapping
-    public ResponseEntity<GetVehicleDTO> create(@RequestBody @Valid PostVehicleDTO postVehicleDTO) {
-        return createController.create(postVehicleDTO);
-    }
 
     private GetVehicleDTO enrichVehicleWithModel(Vehicle vehicle) {
         GetVehicleDTO vehicleDTO = getVehicleMapper.toDto(vehicle);
@@ -62,6 +37,15 @@ public class VehicleController {
 
         vehicleDTO.setVehicleModel(model);
         return vehicleDTO;
+    }
+
+
+
+    @PostMapping
+    public ResponseEntity<GetVehicleDTO> create(@RequestBody @Valid PostVehicleDTO postVehicleDTO) {
+        Vehicle createdVehicle = vehicleService.create(postVehicleMapper.toEntity(postVehicleDTO));
+        GetVehicleDTO dto = enrichVehicleWithModel(createdVehicle);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping
@@ -75,7 +59,7 @@ public class VehicleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GetVehicleDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<GetVehicleDTO> getById(@PathVariable @Min(1) Long id) {
         return vehicleService.getById(id)
                 .map(this::enrichVehicleWithModel)
                 .map(ResponseEntity::ok)
@@ -83,7 +67,7 @@ public class VehicleController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<GetVehicleDTO> deleteById(@PathVariable Long id) {
+    public ResponseEntity<GetVehicleDTO> deleteById(@PathVariable @Min(1) Long id) {
         return vehicleService.deleteById(id)
                 .map(this::enrichVehicleWithModel)
                 .map(ResponseEntity::ok)
@@ -91,7 +75,7 @@ public class VehicleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GetVehicleDTO> updateById(@PathVariable Long id, @RequestBody @Valid PostVehicleDTO inputDto) {
+    public ResponseEntity<GetVehicleDTO> updateById(@PathVariable @Min(1) Long id, @RequestBody @Valid PostVehicleDTO inputDto) {
         return vehicleService.update(postVehicleMapper.toEntity(inputDto), id)
                 .map(this::enrichVehicleWithModel)
                 .map(ResponseEntity::ok)

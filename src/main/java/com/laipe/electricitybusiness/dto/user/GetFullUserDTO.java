@@ -2,7 +2,6 @@ package com.laipe.electricitybusiness.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.laipe.electricitybusiness.dto.vehicle.GetVehicleDTO;
-import com.laipe.electricitybusiness.model.Address;
 import com.laipe.electricitybusiness.model.UserRole;
 import lombok.Data;
 
@@ -41,7 +40,4 @@ public class GetFullUserDTO {
 
     @JsonProperty("vehicles")
     private List<GetVehicleDTO> vehicles;
-
-    @JsonProperty("addresses")
-    private List<Address> addresses;
 }

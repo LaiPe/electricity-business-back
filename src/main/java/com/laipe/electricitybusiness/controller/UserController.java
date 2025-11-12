@@ -1,81 +1,63 @@
 package com.laipe.electricitybusiness.controller;
 
-import com.laipe.electricitybusiness.controller.generic.*;
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
 import com.laipe.electricitybusiness.dto.user.*;
 import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController()
 @RequestMapping("/users")
-public class UserController
-        implements GenericController<Long, GetStrictUserDTO, PostUserDTO, GetStrictUserDTO, GetFullUserDTO, GetFullUserDTO, PostUserDTO, GetStrictUserDTO> {
+public class UserController {
 
-    private final GenericCreateController<User, GetStrictUserDTO,PostUserDTO,Long> createController;
-    private final GenericReadController<User, GetStrictUserDTO, GetFullUserDTO,Long> readController;
-    private final GenericUpdateController<User, GetFullUserDTO,PostUserDTO,Long> updateController;
-    private final GenericDeleteController<User, GetStrictUserDTO,Long> deleteController;
+    private final UserService userService;
 
-    public UserController(
-            UserService service,
-            GetFullUserMapper getFullUserMapper,
-            GetStrictUserMapper getStrictUserMapper,
-            PostUserMapper postUserMapper
-    ) {
-        this.createController = new GenericCreateController<>(
-                service,
-                getStrictUserMapper,
-                postUserMapper
-        ){};
-
-        this.readController = new GenericReadController<>(
-                service,
-                getStrictUserMapper,
-                getFullUserMapper,
-                User.class
-        ){};
-
-        this.updateController = new GenericUpdateController<>(
-                service,
-                getFullUserMapper,
-                postUserMapper,
-                User.class
-        ){};
-
-        this.deleteController = new GenericDeleteController<>(
-                service,
-                getStrictUserMapper,
-                User.class
-        ){};
-    }
+    private final GetFullUserMapper getFullUserMapper;
+    private final GetStrictUserMapper getStrictUserMapper;
+    private final PostUserMapper postUserMapper;
 
     @PostMapping
-    public ResponseEntity<GetStrictUserDTO> create(@RequestBody @Valid PostUserDTO postUserDTO) {
-        return createController.create(postUserDTO);
+    public ResponseEntity<GetStrictUserDTO> create(@RequestBody @Valid PostUserDTO dto) {
+        return ResponseEntity.ok(getStrictUserMapper.toDto(userService.create(postUserMapper.toEntity(dto))));
     }
 
     @GetMapping
     public ResponseEntity<List<GetStrictUserDTO>> getAll() {
-        return readController.getAll();
+        return ResponseEntity.ok(userService.getAll()
+                .stream()
+                .map(getStrictUserMapper::toDto)
+                .toList()
+        );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GetFullUserDTO> getById(@PathVariable Long id) throws ResourceNotFoundException {
-        return readController.getById(id);
+    public ResponseEntity<GetFullUserDTO> getById(@PathVariable @Min(1) Long id) throws ResourceNotFoundException {
+        return userService.getById(id)
+                .map(getFullUserMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GetFullUserDTO> updateById(@PathVariable Long id, @RequestBody @Valid PostUserDTO postDTO) {
-        return updateController.updateById(id, postDTO);
+    public ResponseEntity<GetFullUserDTO> updateById(@PathVariable @Min(1) Long id, @RequestBody @Valid PostUserDTO postDTO) {
+        return userService.update(postUserMapper.toEntity(postDTO), id)
+                .map(getFullUserMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<GetStrictUserDTO> deleteById(@PathVariable Long id) {
-        return deleteController.deleteById(id);
+    public ResponseEntity<GetStrictUserDTO> deleteById(@PathVariable @Min(1) Long id) {
+        return userService.deleteById(id)
+                .map(getStrictUserMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
     }
 }

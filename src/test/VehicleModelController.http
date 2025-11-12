@@ -1,0 +1,29 @@
+### Variables d'environnement
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+
+### Récupérer tous les modèles de véhicules
+GET {{baseUrl}}/vehicles/models
+Content-Type: {{contentType}}
+
+
+### Récupérer un modèle par id (remplacez {{modelId}} par un id réel récupéré via la requête précédente)
+GET {{baseUrl}}/vehicles/models/{{modelId}}
+Content-Type: {{contentType}}
+
+
+### Récupérer un modèle - id inexistant (404 attendu)
+GET {{baseUrl}}/vehicles/models/non-existent-id-123
+Content-Type: {{contentType}}
+
+
+### Conseils et workflow
+# 1) Démarrez l'application (./mvnw spring-boot:run) et exécutez la première requête GET /vehicles/models.
+# 2) Dans la réponse, copiez l'un des champs `id` des objets retournés et remplacez `{{modelId}}` ci-dessus pour tester GET /vehicles/models/{id}.
+# 3) Si la collection `vehicle_model` est vide, le DataInitializer charge `src/main/resources/data/vehicle-models.json` au démarrage et crée des documents avec des ids MongoDB.
+
+# Notes :
+# - Le controller expose uniquement des opérations READ (GET) pour `/vehicles/models` d'après le code présent.
+# - Comme les ids sont des chaînes MongoDB, utilisez exactement la valeur `id` renvoyée par l'API pour tester le GET par id.
+

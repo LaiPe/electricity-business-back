@@ -1,9 +1,9 @@
 package com.laipe.electricitybusiness.controller;
 
-import com.laipe.electricitybusiness.controller.generic.GenericReadController;
-import com.laipe.electricitybusiness.dto.NoMapper;
+import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
 import com.laipe.electricitybusiness.model.VehicleModel;
 import com.laipe.electricitybusiness.service.VehicleModelService;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,30 +12,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@AllArgsConstructor
 @RestController()
 @RequestMapping("/vehicles/models")
 public class VehicleModelController {
-
-    private final GenericReadController<VehicleModel, VehicleModel, VehicleModel, String> readController;
-
-    public VehicleModelController(
-            VehicleModelService service
-    ) {
-        this.readController = new GenericReadController<>(
-                service,
-                new NoMapper<>(),
-                new NoMapper<>(),
-                VehicleModel.class
-        ){};
-    }
+    private final VehicleModelService service;
 
     @GetMapping
     public ResponseEntity<List<VehicleModel>> getAll() {
-        return readController.getAll();
+        return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VehicleModel> getById(@PathVariable String id) {
-        return readController.getById(id);
+    public ResponseEntity<VehicleModel> getById(@PathVariable String id) throws ResourceNotFoundException {
+        return service.getById(id)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResourceNotFoundException(id, VehicleModel.class));
     }
 }
