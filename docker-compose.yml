@@ -1,49 +1,76 @@
 services:
   mysql:
     image: mysql:8.3
-    container_name: eb-mysql
+    container_name: eb-mysql_preprod
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: eb_db
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     ports:
-      - "3306:3306"
+      - "3306:3306" # exposé pour debug local
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data_preprod:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - eb-network
 
   mongodb:
     image: mongo:7.0
-    container_name: eb-mongodb
+    container_name: eb-mongodb_preprod
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: adminpassword
       MONGO_INITDB_DATABASE: eb_db
     ports:
-      - "27017:27017"
+      - "27018:27017" # exposé localement
+    volumes:
+      - mongodb_data_preprod:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - eb-network
-    volumes:
-      - mongodb_data:/data/db
 
   app:
     build: .
-    container_name: eb-app
+    container_name: eb-app_preprod
     restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: preprod
+      PREPROD_JDBC_HOST: mysql
+      PREPROD_DB_USER: user
+      PREPROD_DB_PASS: password
+      PREPROD_MONGO_HOST: mongodb
+      PREPROD_MONGO_PORT: 27017
+      PREPROD_MONGO_USER: admin
+      PREPROD_MONGO_PASS: adminpassword
+
     depends_on:
-      - mysql
-      - mongodb
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
     networks:
       - eb-network
 
 volumes:
-  mysql_data:
+  mysql_data_preprod:
     driver: local
-  mongodb_data:
+  mongodb_data_preprod:
     driver: local
 
 networks:

@@ -2,7 +2,7 @@
 @baseUrl = http://localhost:8080
 @contentType = application/json
 # Remplacez cette valeur par un id réel de VehicleModel présent en base (généré par Mongo au démarrage)
-@vehicleModelId = 68efa9b044700c7422b64ade
+@vehicleModelId = 6914aee540532db63c94f30f
 
 
 ### Récupérer tous les véhicules

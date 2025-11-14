@@ -1,0 +1,68 @@
+services:
+  mysql:
+    image: mysql:8.3
+    container_name: eb-mysql_prod
+    env_file:
+      - .env.prod
+    volumes:
+      - mysql_data_prod:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - eb-network
+
+  mongodb:
+    image: mongo:7.0
+    container_name: eb-mongodb_prod
+    env_file:
+      - .env.prod
+    volumes:
+      - mongodb_data_prod:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - eb-network
+
+  app:
+    build: .
+    container_name: eb-app_prod
+    restart: always
+    env_file:
+      - .env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    ports:
+      - "8080:8080" # exposer uniquement le port HTTP de l'application
+    volumes:
+      - app_logs:/var/log/eb-app
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+    networks:
+      - eb-network
+
+volumes:
+  mysql_data_prod:
+    driver: local
+  mongodb_data_prod:
+    driver: local
+  app_logs:
+    driver: local
+
+networks:
+  eb-network:

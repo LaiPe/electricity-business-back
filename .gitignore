@@ -111,3 +111,5 @@ application-secret.properties
 .*.swo 
 
 .cursorrules
+
+.env*
