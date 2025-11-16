@@ -19,11 +19,13 @@ import java.util.Optional;
 @Service
 @Transactional
 public class UserService extends GenericJPAService<User, Long> implements UserDetailsService {
-    private UserRepository userRepository;
-    private BCryptPasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, BCryptPasswordEncoder passwordEncoder) {
         super(repository);
+        this.userRepository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
