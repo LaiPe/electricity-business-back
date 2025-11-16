@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-public class GetStrictUserDTO {
+public class GetUserDTO {
     @JsonProperty("id")
     private Long id;
 

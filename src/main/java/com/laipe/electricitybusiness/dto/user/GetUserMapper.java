@@ -5,5 +5,5 @@ import com.laipe.electricitybusiness.model.User;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface GetStrictUserMapper extends GenericDTOMapper<User, GetStrictUserDTO> {
+public interface GetUserMapper extends GenericDTOMapper<User, GetUserDTO> {
 }

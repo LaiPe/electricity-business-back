@@ -1,6 +1,13 @@
 package com.laipe.electricitybusiness.model;
 
-public enum UserRole {
+import org.springframework.security.core.GrantedAuthority;
+
+public enum UserRole implements GrantedAuthority {
     ADMIN,
-    USER
+    USER;
+
+    @Override
+    public String getAuthority() {
+        return this.toString();
+    }
 }

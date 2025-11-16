@@ -1,6 +1,6 @@
 package com.laipe.electricitybusiness.service.generic;
 
-import com.laipe.electricitybusiness.util.ModelUtil;
+import com.laipe.electricitybusiness.utils.ModelUtil;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -20,19 +20,19 @@ public class UserController {
     private final UserService userService;
 
     private final GetFullUserMapper getFullUserMapper;
-    private final GetStrictUserMapper getStrictUserMapper;
+    private final GetUserMapper getUserMapper;
     private final PostUserMapper postUserMapper;
 
     @PostMapping
-    public ResponseEntity<GetStrictUserDTO> create(@RequestBody @Valid PostUserDTO dto) {
-        return ResponseEntity.ok(getStrictUserMapper.toDto(userService.create(postUserMapper.toEntity(dto))));
+    public ResponseEntity<GetUserDTO> create(@RequestBody @Valid PostUserDTO dto) {
+        return ResponseEntity.ok(getUserMapper.toDto(userService.create(postUserMapper.toEntity(dto))));
     }
 
     @GetMapping
-    public ResponseEntity<List<GetStrictUserDTO>> getAll() {
+    public ResponseEntity<List<GetUserDTO>> getAll() {
         return ResponseEntity.ok(userService.getAll()
                 .stream()
-                .map(getStrictUserMapper::toDto)
+                .map(getUserMapper::toDto)
                 .toList()
         );
     }
@@ -54,9 +54,9 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<GetStrictUserDTO> deleteById(@PathVariable @Min(1) Long id) {
+    public ResponseEntity<GetUserDTO> deleteById(@PathVariable @Min(1) Long id) {
         return userService.deleteById(id)
-                .map(getStrictUserMapper::toDto)
+                .map(getUserMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
     }

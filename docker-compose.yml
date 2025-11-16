@@ -51,6 +51,7 @@ services:
       PREPROD_MONGO_PORT: 27017
       PREPROD_MONGO_USER: admin
       PREPROD_MONGO_PASS: adminpassword
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173
 
     depends_on:
       mysql:
