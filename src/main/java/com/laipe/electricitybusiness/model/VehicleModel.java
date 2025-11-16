@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
 
-@Document(collection = "vehicle_model")
+@Document(collection = "vehicle_models")
 @Data
 @NoArgsConstructor
 public class VehicleModel {
@@ -31,11 +31,6 @@ public class VehicleModel {
     @Field("model")
     @Indexed(unique = true)
     private String model;
-
-    @NotBlank
-    @Field("basemodel")
-    @Indexed
-    private String baseModel;
 
     @NotBlank
     @Field("year")

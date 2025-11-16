@@ -24,15 +24,15 @@ public class VehicleService extends GenericJPAService<Vehicle, Long> {
 
     @Override
     public Vehicle create(Vehicle entity) {
-        vehicleModelRepository.findById(entity.getVehicleModelId())
-            .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", entity.getVehicleModelId(), VehicleModel.class));
+        vehicleModelRepository.findById(entity.getModelId())
+            .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", entity.getModelId(), VehicleModel.class));
         return super.create(entity);
     }
 
     @Override
     public Optional<Vehicle> update(Vehicle entity, Long id) {
-        vehicleModelRepository.findById(entity.getVehicleModelId())
-                .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", entity.getVehicleModelId(), VehicleModel.class));
+        vehicleModelRepository.findById(entity.getModelId())
+                .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", entity.getModelId(), VehicleModel.class));
         return super.update(entity, id);
     }
 }

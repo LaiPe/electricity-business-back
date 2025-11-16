@@ -20,29 +20,29 @@ public class User {
     private Long id;
 
     @NotBlank
-    @Size(min = 2, max = 100)
-    @Column(name = "username", length = 100,  nullable = false)
+    @Size(min = 2, max = 200)
+    @Column(name = "username", length = 200,  nullable = false)
     private String username;
 
     @NotBlank
-    @Size(min = 2, max = 100)
-    @Column(name = "password", length = 100,  nullable = false)
+    @Size(min = 2, max = 200)
+    @Column(name = "password", length = 200,  nullable = false)
     private String password;
 
     @Email
     @NotBlank
-    @Size(min = 2, max = 100)
-    @Column(name = "email", length = 100,  nullable = false)
+    @Size(min = 2, max = 200)
+    @Column(name = "email", length = 200,  nullable = false)
     private String email;
 
     @NotBlank
-    @Size(min = 2, max = 100)
-    @Column(name = "first_name", length = 100,  nullable = false)
+    @Size(min = 2, max = 200)
+    @Column(name = "first_name", length = 200,  nullable = false)
     private String firstName;
 
     @NotBlank
-    @Size(min = 2, max = 100)
-    @Column(name = "last_name", length = 100,  nullable = false)
+    @Size(min = 2, max = 200)
+    @Column(name = "last_name", length = 200,  nullable = false)
     private String lastName;
 
     @NotNull
@@ -59,7 +59,6 @@ public class User {
     @Column(name = "iban", length = 34)
     private String iban;
 
-
     @NotNull
     @PastOrPresent
     @Column(name = "signin_date", nullable = false)
@@ -69,7 +68,14 @@ public class User {
     @Column(name = "banned", nullable = false)
     private Boolean banned;
 
+
+
+
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnore
     private List<Vehicle> vehicles;
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnore
+    private List<Place> places;
 }

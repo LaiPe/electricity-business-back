@@ -9,6 +9,6 @@ import org.mapstruct.Mapping;
 public interface GetVehicleMapper extends GenericDTOMapper<Vehicle, GetVehicleDTO> {
     @Override
     @Mapping(target = "ownerId", source = "owner.id")
-    @Mapping(target = "vehicleModel.id", source = "vehicleModelId")
+    @Mapping(target = "vehicleModel.id", source = "modelId")
     GetVehicleDTO toDto(Vehicle vehicle);
 }

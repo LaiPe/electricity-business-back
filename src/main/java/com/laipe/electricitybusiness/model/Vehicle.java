@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "vehicles")
 @Data
@@ -27,6 +29,10 @@ public class Vehicle {
     private User owner;
 
     @NotBlank
-    @Column(name = "vehicle_model_id", nullable = false)
-    private String vehicleModelId;
+    @Column(name = "model_id", nullable = false)
+    private String modelId;
+
+
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Booking> bookings;
 }
