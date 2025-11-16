@@ -28,7 +28,6 @@ public class UserRepositoryTest {
         u.setLastName("Doe");
         u.setBirthDate(LocalDate.of(1990,1,1));
         u.setRole(UserRole.USER);
-        u.setIban("FR7630006000011234567890189");
         u.setSigninDate(LocalDateTime.now());
         u.setBanned(false);
         return u;
