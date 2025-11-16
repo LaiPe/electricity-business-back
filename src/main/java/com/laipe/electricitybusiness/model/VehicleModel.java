@@ -1,6 +1,7 @@
 package com.laipe.electricitybusiness.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Min;
@@ -13,7 +14,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Document(collection = "vehicle_model")
 @Data
@@ -43,38 +43,18 @@ public class VehicleModel {
     private String year;
 
     @NotNull
-    @Field("cons_kwh_per_100km")
+    @Field("consumption_kwh_per_100km")
+    @JsonProperty("consumption_kwh_per_100km")
     @Min(value = 0)
     @Digits(integer = 2, fraction = 2)
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
-    private BigDecimal consKwhPer100Km;
+    private BigDecimal consumptionKwhPer100Km;
 
     @NotNull
-    @Field("range")
+    @Field("battery_capacity_kwh")
+    @JsonProperty("battery_capacity_kwh")
     @Min(value = 0)
-    private Integer range;
-
-    @NotNull
-    @Field("time_charge240")
-    @Min(value = 0)
-    @Digits(integer = 2, fraction = 2)
+    @Digits(integer = 3, fraction = 2)
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
-    private BigDecimal timeCharge240;
-
-    @NotNull
-    @Field("time_charge240b")
-    @Min(value = 0)
-    @Digits(integer = 2, fraction = 2)
-    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
-    private BigDecimal timeCharge240b;
-
-    @Field("c240dscr")
-    private String c240dscr;
-
-    @Field("c240bdscr")
-    private String c240bdscr;
-
-    @NotNull
-    @Field("modifiedon")
-    private LocalDate modifiedOn;
+    private BigDecimal batteryCapacityKwh;
 }
