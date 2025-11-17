@@ -1,6 +1,7 @@
 package com.laipe.electricitybusiness.service;
 
 import com.laipe.electricitybusiness.controller.handler.AlreadyUsedUsernameException;
+import com.laipe.electricitybusiness.controller.handler.AlreadyVerifiedUserException;
 import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.repository.UserRepository;
 import com.laipe.electricitybusiness.service.generic.GenericJPAService;
@@ -62,10 +63,15 @@ public class UserService extends GenericJPAService<User, Long> implements UserDe
         return super.update(newEntity, id);
     }
 
-    public Optional<User> verifyUser(Long userId, String code) {
+    public Optional<User> verifyUser(Long userId, String code) throws AlreadyVerifiedUserException {
         return userRepository.findById(userId)
-                .filter(user -> verificationCodeService.validateVerificationCode(user, code))
                 .map(user -> {
+                    if (user.getVerified()) {
+                        throw new AlreadyVerifiedUserException(userId);
+                    }
+                    if (!verificationCodeService.validateVerificationCode(user, code)) {
+                        return null;
+                    }
                     user.setVerified(true);
                     return userRepository.save(user);
                 });

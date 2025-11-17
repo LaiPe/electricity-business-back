@@ -114,11 +114,12 @@ public class AuthController {
         // Utiliser l'utilitaire pour récupérer les infos utilisateur depuis le contexte de sécurité
         GetUserDTO userDto = securityUtil.getCurrentUserFromAuthentification();
 
-        if (userDto != null) {
-            return ResponseEntity.ok(new AuthResponse("User is authenticated (token present)", userDto));
-        }
-
-        return ResponseEntity.ok(new AuthResponse("User is authenticated", null));
+        return ResponseEntity.ok(new AuthResponse(
+                "User is authenticated (token present)",
+                userService.getById(userDto.getId())
+                    .map(getUserMapper::toDto)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"))
+        ));
     }
 
     @PostMapping("/logout")

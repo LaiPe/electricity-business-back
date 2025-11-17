@@ -60,6 +60,13 @@ public class ControllerExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
+    @ExceptionHandler(AlreadyVerifiedUserException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyVerifiedUserException(AlreadyVerifiedUserException ex) {
+        log.warn("L'utilisateur est déjà vérifié: {}", ex.getUserId());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(ex.getMessage()));
+    }
+
     @Getter
     @AllArgsConstructor
     public static class ErrorResponse {
