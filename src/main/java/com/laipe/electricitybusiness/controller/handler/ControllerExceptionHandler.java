@@ -18,28 +18,28 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(final ResourceNotFoundException exception) {
-        log.warn(exception.getMessage());
+        log.warn("Caught ResourceNotFoundException: {}", exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(exception.getMessage()));
     }
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleSQLIntegrityConstraintViolationException(final SQLIntegrityConstraintViolationException exception) {
-        log.warn(exception.getMessage());
+        log.warn("Caught SQLIntegrityConstraintViolationException: {}", exception.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse("Data constraint violation. Please check required fields, their formats and values."));
     }
 
     @ExceptionHandler(IntegrityConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleIntegrityConstraintViolationException(final IntegrityConstraintViolationException exception) {
-        log.warn(exception.getMessage());
+        log.warn("Caught IntegrityConstraintViolationException: {}", exception.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(exception.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        log.warn("Validation error: {}", ex.getMessage());
+        log.warn("Caught MethodArgumentNotValidException: {}", ex.getMessage());
         var errors = ex.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> new ValidationError(fieldError.getField(), fieldError.getDefaultMessage()))
                 .toList();
@@ -48,21 +48,21 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
-        log.warn("Tentative de connexion échouée : {}", ex.getMessage());
+        log.warn("Caught BadCredentialsException : {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponse("Invalid username or password"));
     }
 
     @ExceptionHandler(AlreadyUsedUsernameException.class)
     public ResponseEntity<ErrorResponse> handleAlreadyUsedUsernameException(AlreadyUsedUsernameException ex) {
-        log.warn("Nom d'utilisateur déjà utilisé: {}", ex.getUsername());
+        log.warn("Caught AlreadyUsedUsernameException : {}", ex.getUsername());
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
     @ExceptionHandler(AlreadyVerifiedUserException.class)
     public ResponseEntity<ErrorResponse> handleAlreadyVerifiedUserException(AlreadyVerifiedUserException ex) {
-        log.warn("L'utilisateur est déjà vérifié: {}", ex.getUserId());
+        log.warn("Caught AlreadyVerifiedUserException : {}", ex.getUserId());
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(ex.getMessage()));
     }
