@@ -4,20 +4,25 @@ import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundExceptio
 import com.laipe.electricitybusiness.dto.user.*;
 import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.service.UserService;
+import com.laipe.electricitybusiness.utils.SecurityUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController()
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
+
+    private final SecurityUtil securityUtil;
 
     private final GetFullUserMapper getFullUserMapper;
     private final GetUserMapper getUserMapper;
@@ -59,5 +64,19 @@ public class UserController {
                 .map(getUserMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<AuthController.AuthResponse> me() {
+        // Si cette méthode est appelée, cela signifie que l'utilisateur est authentifié (grâce au filtre JWT)
+        // Utiliser l'utilitaire pour récupérer les infos utilisateur depuis le contexte de sécurité
+        GetUserDTO userDto = securityUtil.getCurrentUserFromAuthentification();
+
+        return ResponseEntity.ok(new AuthController.AuthResponse(
+                "User is authenticated (token present)",
+                userService.getById(userDto.getId())
+                        .map(getUserMapper::toDto)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found"))
+        ));
     }
 }

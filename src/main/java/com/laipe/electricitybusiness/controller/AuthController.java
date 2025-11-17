@@ -1,5 +1,6 @@
 package com.laipe.electricitybusiness.controller;
 
+import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
 import com.laipe.electricitybusiness.dto.auth.LoginDTO;
 import com.laipe.electricitybusiness.dto.auth.RegisterDTO;
 import com.laipe.electricitybusiness.dto.auth.RegisterMapper;
@@ -23,6 +24,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -103,23 +106,31 @@ public class AuthController {
         log.info("Utilisateur vérifié avec succès: {}", currentUser.getUsername());
 
         return ResponseEntity.ok(new AuthResponse("User verified successfully", currentUser));
-
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<AuthResponse> me() {
-        // Si cette méthode est appelée, cela signifie que l'utilisateur est authentifié (grâce au filtre JWT)
-        log.info("Vérification de l'authentification réussie");
+    @PostMapping("/refresh-verification-code")
+    public ResponseEntity<AuthResponse> refreshVerificationCode() {
+        log.info("Rafraîchissement du code de vérification pour l'utilisateur courant");
 
-        // Utiliser l'utilitaire pour récupérer les infos utilisateur depuis le contexte de sécurité
-        GetUserDTO userDto = securityUtil.getCurrentUserFromAuthentification();
+        // Récupérer l'utilisateur courant depuis le contexte de sécurité
+        GetUserDTO currentUser = securityUtil.getCurrentUserFromAuthentification();
+        Long userId = currentUser.getId();
 
-        return ResponseEntity.ok(new AuthResponse(
-                "User is authenticated (token present)",
-                userService.getById(userDto.getId())
-                    .map(getUserMapper::toDto)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found"))
-        ));
+        // Générer un nouveau code de vérification
+        String newCode = verificationCodeService.generateCode();
+        // TODO: Envoyer le code par email
+
+        // Créer une instance User avec le nouveau code
+        User userToUpdate = new User();
+        userToUpdate.setVerificationCode(newCode); // Le code sera hashé en base par le service UserService
+        userToUpdate.setCodeExpirationDate(LocalDateTime.now().plusMinutes(verificationCodeService.getCODE_EXPIRATION_MINUTES()));
+
+        // Mettre à jour l'utilisateur avec le nouveau code
+        User updatedUser = userService.update(userToUpdate, userId)
+                .orElseThrow(() -> new ResourceNotFoundException(userId, User.class));
+
+        log.info("Nouveau code de vérification généré pour l'utilisateur: {}", currentUser.getUsername());
+        return ResponseEntity.ok(new AuthResponse("New verification code generated: " + newCode, getUserMapper.toDto(updatedUser)));
     }
 
     @PostMapping("/logout")

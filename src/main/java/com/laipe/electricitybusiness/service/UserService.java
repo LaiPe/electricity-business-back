@@ -59,7 +59,12 @@ public class UserService extends GenericJPAService<User, Long> implements UserDe
 
     @Override
     public Optional<User> update(User newEntity, Long id) {
-        newEntity.setPassword(passwordEncoder.encode(newEntity.getPassword()));
+        if (newEntity.getVerificationCode() != null) {
+            newEntity.setVerificationCode(passwordEncoder.encode(newEntity.getVerificationCode())); // Hashage du code de vérification
+        }
+        if (newEntity.getPassword() != null) {
+            newEntity.setPassword(passwordEncoder.encode(newEntity.getPassword()));
+        }
         return super.update(newEntity, id);
     }
 
