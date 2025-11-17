@@ -44,7 +44,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/register").permitAll() // Autoriser les routes d'inscription
                         .requestMatchers("/api/auth/login").permitAll() // Autoriser les routes d'authentification
+                        .requestMatchers("/h2-console/**").permitAll() // Autoriser l'accès à la console H2
                         .anyRequest().authenticated() // Toutes les autres requêtes nécessitent une authentification
+                )
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin())
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Configuration du provider d'authentification

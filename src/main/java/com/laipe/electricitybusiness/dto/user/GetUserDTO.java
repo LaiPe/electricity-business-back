@@ -35,4 +35,7 @@ public class GetUserDTO {
 
     @JsonProperty("banned")
     private Boolean banned;
+
+    @JsonProperty("verified")
+    private Boolean verified;
 }

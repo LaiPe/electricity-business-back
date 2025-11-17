@@ -67,6 +67,18 @@ public class User implements UserDetails {
     @Column(name = "banned", nullable = false)
     private Boolean banned;
 
+    @NotNull
+    @Column(name = "verified", nullable = false)
+    private Boolean verified;
+
+    @NotNull
+    @Column(name = "verification_code", nullable = false)
+    private String verificationCode;
+
+    @NotNull
+    @Column(name = "code_expiration_date", nullable = false)
+    private LocalDateTime codeExpirationDate;
+
 
 
 

@@ -21,17 +21,19 @@ import java.util.Optional;
 public class UserService extends GenericJPAService<User, Long> implements UserDetailsService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final VerificationCodeService verificationCodeService;
 
-    public UserService(UserRepository repository, BCryptPasswordEncoder passwordEncoder) {
+
+    public UserService(UserRepository repository, BCryptPasswordEncoder passwordEncoder, VerificationCodeService verificationCodeService) {
         super(repository);
         this.userRepository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.verificationCodeService = verificationCodeService;
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.debug("Tentative de chargement de l'utilisateur: {}", username);
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> {
                     log.warn("Utilisateur non trouvé: {}", username);
@@ -45,8 +47,12 @@ public class UserService extends GenericJPAService<User, Long> implements UserDe
             throw new AlreadyUsedUsernameException(entity.getUsername());
         }
         entity.setBanned(false);
+        entity.setVerified(false);
         entity.setSigninDate(LocalDateTime.now());
         entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+
+        entity.setVerificationCode(passwordEncoder.encode(entity.getVerificationCode())); // Hashage du code de vérification
+        entity.setCodeExpirationDate(LocalDateTime.now().plusMinutes(verificationCodeService.getCODE_EXPIRATION_MINUTES()));
         return super.create(entity);
     }
 
@@ -54,5 +60,21 @@ public class UserService extends GenericJPAService<User, Long> implements UserDe
     public Optional<User> update(User newEntity, Long id) {
         newEntity.setPassword(passwordEncoder.encode(newEntity.getPassword()));
         return super.update(newEntity, id);
+    }
+
+    public Optional<User> verifyUser(Long userId, String code) {
+        return userRepository.findById(userId)
+                .filter(user -> verificationCodeService.validateVerificationCode(user, code))
+                .map(user -> {
+                    user.setVerified(true);
+                    return userRepository.save(user);
+                });
+    }
+
+    public void banUser(Long userId) {
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setBanned(true);
+            userRepository.save(user);
+        });
     }
 }
