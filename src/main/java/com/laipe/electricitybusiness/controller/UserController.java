@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,11 +29,13 @@ public class UserController {
     private final PostUserMapper postUserMapper;
 
     @PostMapping
+
     public ResponseEntity<GetUserDTO> create(@RequestBody @Valid PostUserDTO dto) {
         return ResponseEntity.ok(getUserMapper.toDto(userService.create(postUserMapper.toEntity(dto))));
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<GetUserDTO>> getAll() {
         return ResponseEntity.ok(userService.getAll()
                 .stream()
@@ -42,6 +45,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GetUserDTO> getById(@PathVariable @Min(1) Long id) throws ResourceNotFoundException {
         return userService.getById(id)
                 .map(getUserMapper::toDto)
@@ -50,6 +54,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GetUserDTO> updateById(@PathVariable @Min(1) Long id, @RequestBody @Valid PostUserDTO postDTO) {
         return userService.update(postUserMapper.toEntity(postDTO), id)
                 .map(getUserMapper::toDto)
@@ -58,6 +63,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GetUserDTO> deleteById(@PathVariable @Min(1) Long id) {
         return userService.deleteById(id)
                 .map(getUserMapper::toDto)
