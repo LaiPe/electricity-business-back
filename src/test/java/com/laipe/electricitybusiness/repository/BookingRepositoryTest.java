@@ -42,6 +42,9 @@ public class BookingRepositoryTest {
         u.setRole(UserRole.USER);
         u.setSigninDate(LocalDateTime.now());
         u.setBanned(false);
+        u.setVerified(false);
+        u.setVerificationCode("456789");
+        u.setCodeExpirationDate(LocalDateTime.now().plusHours(24));
         return u;
     }
 

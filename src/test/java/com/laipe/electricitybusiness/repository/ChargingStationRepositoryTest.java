@@ -39,6 +39,9 @@ public class ChargingStationRepositoryTest {
         u.setRole(UserRole.USER);
         u.setSigninDate(LocalDateTime.now());
         u.setBanned(false);
+        u.setVerified(false);
+        u.setVerificationCode("345678");
+        u.setCodeExpirationDate(LocalDateTime.now().plusHours(24));
         return u;
     }
 

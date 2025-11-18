@@ -30,6 +30,9 @@ public class UserRepositoryTest {
         u.setRole(UserRole.USER);
         u.setSigninDate(LocalDateTime.now());
         u.setBanned(false);
+        u.setVerified(false);
+        u.setVerificationCode("123456");
+        u.setCodeExpirationDate(LocalDateTime.now().plusHours(24));
         return u;
     }
 
