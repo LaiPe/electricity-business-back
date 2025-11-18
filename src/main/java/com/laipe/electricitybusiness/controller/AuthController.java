@@ -85,7 +85,7 @@ public class AuthController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<AuthResponse> verify(@Valid @RequestBody String code) {
+    public ResponseEntity<MessageResponse> verify(@Valid @RequestBody String code) {
         log.info("Vérification du code pour l'utilisateur courant");
 
         // Récupérer l'utilisateur courant depuis le contexte de sécurité
@@ -93,19 +93,18 @@ public class AuthController {
         Long userId = currentUser.getId();
 
         // Valider le code de vérification
-        StatusUserDTO statusUser = userService.verifyUser(userId, code)
-                .map(statusUserMapper::toDto)
+        userService.verifyUser(userId, code)
                 .orElseThrow(() -> {
                     log.warn("Échec de la vérification pour l'utilisateur: {}", userId);
                     return new IllegalArgumentException("Invalid verification code");
                 });
         log.info("Utilisateur vérifié avec succès: {}", currentUser.getUsername());
 
-        return ResponseEntity.ok(new AuthResponse("User verified successfully", statusUser));
+        return ResponseEntity.ok(new MessageResponse("User verified successfully"));
     }
 
     @PostMapping("/refresh-verification-code")
-    public ResponseEntity<AuthResponse> refreshVerificationCode() {
+    public ResponseEntity<MessageResponse> refreshVerificationCode() {
         log.info("Rafraîchissement du code de vérification pour l'utilisateur courant");
 
         // Récupérer l'utilisateur courant depuis le contexte de sécurité
@@ -122,11 +121,11 @@ public class AuthController {
         userToUpdate.setCodeExpirationDate(LocalDateTime.now().plusMinutes(verificationCodeService.getCODE_EXPIRATION_MINUTES()));
 
         // Mettre à jour l'utilisateur avec le nouveau code
-        User updatedUser = userService.update(userToUpdate, userId)
+        userService.update(userToUpdate, userId)
                 .orElseThrow(() -> new ResourceNotFoundException(userId, User.class));
 
         log.info("Nouveau code de vérification généré pour l'utilisateur: {}", currentUser.getUsername());
-        return ResponseEntity.ok(new AuthResponse("New verification code generated: " + newCode, statusUserMapper.toDto(updatedUser)));
+        return ResponseEntity.ok(new MessageResponse("New verification code generated: " + newCode));
     }
 
     @GetMapping("/status")
@@ -157,5 +156,11 @@ public class AuthController {
     public static class AuthResponse {
         private String message;
         private StatusUserDTO user;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class MessageResponse {
+        private String message;
     }
 }
