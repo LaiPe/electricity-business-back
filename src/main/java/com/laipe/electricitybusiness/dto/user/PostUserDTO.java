@@ -45,8 +45,4 @@ public class PostUserDTO {
     @NotNull
     @JsonProperty("role")
     private UserRole role;
-
-    @Size(min = 15,  max = 34)
-    @JsonProperty("iban")
-    private String iban;
 }
