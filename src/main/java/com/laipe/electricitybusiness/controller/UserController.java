@@ -1,6 +1,8 @@
 package com.laipe.electricitybusiness.controller;
 
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
+import com.laipe.electricitybusiness.dto.auth.RegisterDTO;
+import com.laipe.electricitybusiness.dto.auth.RegisterMapper;
 import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
 import com.laipe.electricitybusiness.dto.user.*;
 import com.laipe.electricitybusiness.model.User;
@@ -28,6 +30,7 @@ public class UserController {
 
     private final GetUserMapper getUserMapper;
     private final PostUserMapper postUserMapper;
+    private final RegisterMapper registerMapper;
 
     @PostMapping
 
@@ -82,5 +85,17 @@ public class UserController {
                 .map(getUserMapper::toDto)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"))
         );
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<GetUserDTO> updateMe(@RequestBody @Valid RegisterDTO updateDTO) {
+        // Si cette méthode est appelée, cela signifie que l'utilisateur est authentifié (grâce au filtre JWT)
+        // Utiliser l'utilitaire pour récupérer les infos utilisateur depuis le contexte de sécurité
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+
+        return userService.update(registerMapper.toEntity(updateDTO), currentUser.getId())
+                .map(getUserMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }
