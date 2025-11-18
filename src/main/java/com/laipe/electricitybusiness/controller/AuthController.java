@@ -1,5 +1,6 @@
 package com.laipe.electricitybusiness.controller;
 
+import com.laipe.electricitybusiness.controller.handler.InvalidVerificationCodeException;
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
 import com.laipe.electricitybusiness.dto.auth.*;
 import com.laipe.electricitybusiness.model.User;
@@ -94,10 +95,7 @@ public class AuthController {
 
         // Valider le code de vérification
         userService.verifyUser(userId, code)
-                .orElseThrow(() -> {
-                    log.warn("Échec de la vérification pour l'utilisateur: {}", userId);
-                    return new IllegalArgumentException("Invalid verification code");
-                });
+                .orElseThrow(() -> new InvalidVerificationCodeException());
         log.info("Utilisateur vérifié avec succès: {}", currentUser.getUsername());
 
         return ResponseEntity.ok(new MessageResponse("User verified successfully"));
