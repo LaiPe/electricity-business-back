@@ -1,6 +1,6 @@
 package com.laipe.electricitybusiness.utils;
 
-import com.laipe.electricitybusiness.dto.user.GetUserDTO;
+import com.laipe.electricitybusiness.dto.user.StrictUserDTO;
 import com.laipe.electricitybusiness.service.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,7 +55,7 @@ public class SecurityUtil {
      *
      * @return GetUserDTO rempli si le token est présent et valide selon JwtService, sinon null
      */
-    public GetUserDTO getCurrentUserFromToken(String token) {
+    public StrictUserDTO getCurrentUserFromToken(String token) {
         if (token == null || token.isBlank()) return null;
 
         try {
@@ -63,7 +63,7 @@ public class SecurityUtil {
             Long id = jwtService.extractUserId(token);
             if (username == null && id == null) return null;
 
-            GetUserDTO dto = new GetUserDTO();
+            StrictUserDTO dto = new StrictUserDTO();
             dto.setUsername(username);
             dto.setId(id);
             return dto;
@@ -73,7 +73,7 @@ public class SecurityUtil {
         }
     }
 
-    public GetUserDTO getCurrentUserFromAuthentification() {
+    public StrictUserDTO getCurrentStrictUserFromAuthentification() {
         String token = getTokenFromAuthentication();
         return getCurrentUserFromToken(token);
     }

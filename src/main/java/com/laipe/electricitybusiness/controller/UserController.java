@@ -24,7 +24,6 @@ public class UserController {
 
     private final SecurityUtil securityUtil;
 
-    private final GetFullUserMapper getFullUserMapper;
     private final GetUserMapper getUserMapper;
     private final PostUserMapper postUserMapper;
 
@@ -43,17 +42,17 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GetFullUserDTO> getById(@PathVariable @Min(1) Long id) throws ResourceNotFoundException {
+    public ResponseEntity<GetUserDTO> getById(@PathVariable @Min(1) Long id) throws ResourceNotFoundException {
         return userService.getById(id)
-                .map(getFullUserMapper::toDto)
+                .map(getUserMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GetFullUserDTO> updateById(@PathVariable @Min(1) Long id, @RequestBody @Valid PostUserDTO postDTO) {
+    public ResponseEntity<GetUserDTO> updateById(@PathVariable @Min(1) Long id, @RequestBody @Valid PostUserDTO postDTO) {
         return userService.update(postUserMapper.toEntity(postDTO), id)
-                .map(getFullUserMapper::toDto)
+                .map(getUserMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
     }
@@ -67,16 +66,14 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<AuthController.AuthResponse> me() {
+    public ResponseEntity<GetUserDTO> me() {
         // Si cette méthode est appelée, cela signifie que l'utilisateur est authentifié (grâce au filtre JWT)
         // Utiliser l'utilitaire pour récupérer les infos utilisateur depuis le contexte de sécurité
-        GetUserDTO userDto = securityUtil.getCurrentUserFromAuthentification();
+        StrictUserDTO dto = securityUtil.getCurrentStrictUserFromAuthentification();
 
-        return ResponseEntity.ok(new AuthController.AuthResponse(
-                "User is authenticated (token present)",
-                userService.getById(userDto.getId())
-                        .map(getUserMapper::toDto)
-                        .orElseThrow(() -> new IllegalArgumentException("User not found"))
-        ));
+        return ResponseEntity.ok(userService.getById(dto.getId())
+                .map(getUserMapper::toDto)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"))
+        );
     }
 }

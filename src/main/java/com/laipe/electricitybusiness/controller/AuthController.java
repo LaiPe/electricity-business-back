@@ -4,8 +4,8 @@ import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundExceptio
 import com.laipe.electricitybusiness.dto.auth.LoginDTO;
 import com.laipe.electricitybusiness.dto.auth.RegisterDTO;
 import com.laipe.electricitybusiness.dto.auth.RegisterMapper;
-import com.laipe.electricitybusiness.dto.user.GetUserDTO;
-import com.laipe.electricitybusiness.dto.user.GetUserMapper;
+import com.laipe.electricitybusiness.dto.user.StrictUserDTO;
+import com.laipe.electricitybusiness.dto.user.StrictUserMapper;
 import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.model.UserRole;
 import com.laipe.electricitybusiness.service.CookieService;
@@ -39,7 +39,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
 
     private final RegisterMapper registerMapper;
-    private final GetUserMapper getUserMapper;
+    private final StrictUserMapper strictUserMapper;
     private final SecurityUtil securityUtil;
     private final CookieService cookieService;
 
@@ -59,7 +59,7 @@ public class AuthController {
         response.addCookie(cookieService.createAccessTokenCookie(accessToken));
 
         log.info("Utilisateur connecté avec succès: {}", loginDTO.getUsername());
-        return ResponseEntity.ok(new AuthResponse("User logged in successfully", getUserMapper.toDto(user)));
+        return ResponseEntity.ok(new AuthResponse("User logged in successfully", strictUserMapper.toDto(user)));
     }
 
     @PostMapping("/register")
@@ -85,7 +85,7 @@ public class AuthController {
         response.addCookie(cookieService.createAccessTokenCookie(accessToken));
 
         log.info("Utilisateur créé avec succès: {}", savedUser.getUsername());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse("User registered successfull : " + verificationCode, getUserMapper.toDto(savedUser)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse("User registered successfull : " + verificationCode, strictUserMapper.toDto(savedUser)));
     }
 
     @PostMapping("/verify")
@@ -93,12 +93,12 @@ public class AuthController {
         log.info("Vérification du code pour l'utilisateur courant");
 
         // Récupérer l'utilisateur courant depuis le contexte de sécurité
-        GetUserDTO currentUser = securityUtil.getCurrentUserFromAuthentification();
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
         Long userId = currentUser.getId();
 
         // Valider le code de vérification
         currentUser = userService.verifyUser(userId, code)
-                .map(getUserMapper::toDto)
+                .map(strictUserMapper::toDto)
                 .orElseThrow(() -> {
                     log.warn("Échec de la vérification pour l'utilisateur: {}", userId);
                     return new IllegalArgumentException("Invalid verification code");
@@ -113,7 +113,7 @@ public class AuthController {
         log.info("Rafraîchissement du code de vérification pour l'utilisateur courant");
 
         // Récupérer l'utilisateur courant depuis le contexte de sécurité
-        GetUserDTO currentUser = securityUtil.getCurrentUserFromAuthentification();
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
         Long userId = currentUser.getId();
 
         // Générer un nouveau code de vérification
@@ -130,7 +130,7 @@ public class AuthController {
                 .orElseThrow(() -> new ResourceNotFoundException(userId, User.class));
 
         log.info("Nouveau code de vérification généré pour l'utilisateur: {}", currentUser.getUsername());
-        return ResponseEntity.ok(new AuthResponse("New verification code generated: " + newCode, getUserMapper.toDto(updatedUser)));
+        return ResponseEntity.ok(new AuthResponse("New verification code generated: " + newCode, strictUserMapper.toDto(updatedUser)));
     }
 
     @PostMapping("/logout")
@@ -144,6 +144,6 @@ public class AuthController {
     @AllArgsConstructor
     public static class AuthResponse {
         private String message;
-        private GetUserDTO user;
+        private StrictUserDTO user;
     }
 }
