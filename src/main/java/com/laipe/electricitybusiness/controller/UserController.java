@@ -1,8 +1,6 @@
 package com.laipe.electricitybusiness.controller;
 
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
-import com.laipe.electricitybusiness.dto.auth.RegisterDTO;
-import com.laipe.electricitybusiness.dto.auth.RegisterMapper;
 import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
 import com.laipe.electricitybusiness.dto.user.*;
 import com.laipe.electricitybusiness.model.User;
@@ -14,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,7 +29,10 @@ public class UserController {
 
     private final GetUserMapper getUserMapper;
     private final PostUserMapper postUserMapper;
-    private final RegisterMapper registerMapper;
+    private final UpdateUserMapper updateUserMapper;
+    private final UpdateUsernameMapper updateUsernameMapper;
+    private final UpdatePasswordMapper updatePasswordMapper;
+    private final UpdateEmailMapper updateEmailMapper;
 
     @PostMapping
 
@@ -77,8 +79,6 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<GetUserDTO> me() {
-        // Si cette méthode est appelée, cela signifie que l'utilisateur est authentifié (grâce au filtre JWT)
-        // Utiliser l'utilitaire pour récupérer les infos utilisateur depuis le contexte de sécurité
         StrictUserDTO dto = securityUtil.getCurrentStrictUserFromAuthentification();
 
         return ResponseEntity.ok(userService.getById(dto.getId())
@@ -88,12 +88,41 @@ public class UserController {
     }
 
     @PutMapping("/me")
-    public ResponseEntity<GetUserDTO> updateMe(@RequestBody @Valid RegisterDTO updateDTO) {
-        // Si cette méthode est appelée, cela signifie que l'utilisateur est authentifié (grâce au filtre JWT)
-        // Utiliser l'utilitaire pour récupérer les infos utilisateur depuis le contexte de sécurité
+    public ResponseEntity<GetUserDTO> updateDetails(@RequestBody @Valid UpdateUserDTO updateDTO) {
         StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
 
-        return userService.update(registerMapper.toEntity(updateDTO), currentUser.getId())
+        return userService.update(updateUserMapper.toEntity(updateDTO), currentUser.getId())
+                .map(getUserMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
+    @PutMapping("/me/username")
+    public ResponseEntity<GetUserDTO> updateUsername(@RequestBody @Valid UpdateUsernameDTO updateDTO) {
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+
+        return userService.update(updateUsernameMapper.toEntity(updateDTO), currentUser.getId())
+                .map(getUserMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<GetUserDTO> updatePassword(@RequestBody @Valid UpdatePasswordDTO updateDTO) {
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+
+        // Hashage du password assuré par le service lors de la mise à jour
+        return userService.update(updatePasswordMapper.toEntity(updateDTO), currentUser.getId())
+                .map(getUserMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
+    @PutMapping("/me/email")
+    public ResponseEntity<GetUserDTO> updateEmail(@RequestBody @Valid UpdateEmailDTO updateDTO) {
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+
+        return userService.update(updateEmailMapper.toEntity(updateDTO), currentUser.getId())
                 .map(getUserMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));

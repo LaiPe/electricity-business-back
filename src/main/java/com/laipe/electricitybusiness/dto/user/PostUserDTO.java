@@ -12,12 +12,12 @@ import java.time.LocalDate;
 @Data
 public class PostUserDTO {
     @NotBlank
-    @Size(min = 2, max = 100)
+    @Size(min = 2, max = 200)
     @JsonProperty("username")
     private String username;
 
     @NotBlank
-    @Size(min = 2, max = 100)
+    @Size(min = 2, max = 200)
     @JsonProperty("password")
     private String password;
 
@@ -27,12 +27,12 @@ public class PostUserDTO {
     private String email;
 
     @NotBlank
-    @Size(min = 2, max = 100)
+    @Size(min = 2, max = 200)
     @JsonProperty("first_name")
     private String firstName;
 
     @NotBlank
-    @Size(min = 2, max = 100)
+    @Size(min = 2, max = 200)
     @JsonProperty("last_name")
     private String lastName;
 

@@ -59,6 +59,9 @@ public class UserService extends GenericJPAService<User, Long> implements UserDe
 
     @Override
     public Optional<User> update(User newEntity, Long id) {
+        if (newEntity.getUsername() != null && userRepository.findByUsername(newEntity.getUsername()).isPresent()) {
+            throw new AlreadyUsedUsernameException(newEntity.getUsername());
+        }
         if (newEntity.getVerificationCode() != null) {
             newEntity.setVerificationCode(passwordEncoder.encode(newEntity.getVerificationCode())); // Hashage du code de vérification
         }
