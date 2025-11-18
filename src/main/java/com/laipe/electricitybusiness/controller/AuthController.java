@@ -133,6 +133,17 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse("New verification code generated: " + newCode, strictUserMapper.toDto(updatedUser)));
     }
 
+    @GetMapping("/status")
+    public ResponseEntity<AuthResponse> checkAuthStatus() {
+        log.info("Vérification du statut d'authentification de l'utilisateur courant");
+
+        // Récupérer l'utilisateur courant depuis le contexte de sécurité
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+
+        log.info("Utilisateur authentifié: {}", currentUser.getUsername());
+        return ResponseEntity.ok(new AuthResponse("User is authenticated", currentUser));
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
         // Supprime le cookie d'accès côté client
