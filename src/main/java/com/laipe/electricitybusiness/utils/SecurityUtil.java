@@ -1,6 +1,6 @@
 package com.laipe.electricitybusiness.utils;
 
-import com.laipe.electricitybusiness.dto.user.StrictUserDTO;
+import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
 import com.laipe.electricitybusiness.service.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

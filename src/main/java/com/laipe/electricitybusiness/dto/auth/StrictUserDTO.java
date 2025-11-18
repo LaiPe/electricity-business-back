@@ -1,4 +1,4 @@
-package com.laipe.electricitybusiness.dto.user;
+package com.laipe.electricitybusiness.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.laipe.electricitybusiness.dto.user;
+package com.laipe.electricitybusiness.dto.auth;
 
 import com.laipe.electricitybusiness.dto.GenericDTOMapper;
 import com.laipe.electricitybusiness.model.User;
