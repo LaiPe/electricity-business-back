@@ -59,7 +59,16 @@ public class VehicleController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping()
+    public ResponseEntity<GetVehicleDTO> getByOwnerId() {
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        Long ownerId = currentUser.getId();
 
+        return vehicleService.getByOwnerId(ownerId)
+                .map(this::enrichVehicleWithModel)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResourceNotFoundException(ownerId, Vehicle.class));
+    }
 
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")

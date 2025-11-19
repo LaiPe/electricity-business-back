@@ -15,10 +15,12 @@ import java.util.Optional;
 @Transactional
 public class VehicleService extends GenericJPAService<Vehicle, Long> {
 
+    private final VehicleRepository vehicleRepository;
     private final VehicleModelRepository vehicleModelRepository;
 
     protected VehicleService(VehicleRepository vehicleRepository,  VehicleModelRepository vehicleModelRepository) {
         super(vehicleRepository);
+        this.vehicleRepository = vehicleRepository;
         this.vehicleModelRepository = vehicleModelRepository;
     }
 
@@ -34,5 +36,9 @@ public class VehicleService extends GenericJPAService<Vehicle, Long> {
         vehicleModelRepository.findById(entity.getModelId())
                 .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", entity.getModelId(), VehicleModel.class));
         return super.update(entity, id);
+    }
+
+    public Optional<Vehicle> getByOwnerId(Long ownerId) {
+        return vehicleRepository.findByOwnerId(ownerId);
     }
 }
