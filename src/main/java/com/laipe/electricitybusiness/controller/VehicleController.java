@@ -94,10 +94,9 @@ public class VehicleController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @authorizeUtil.isOwnerOfVehicle(#id)")
-    public ResponseEntity<GetVehicleDTO> deleteById(@PathVariable @Min(1) Long id) {
+    public ResponseEntity<Object> deleteById(@PathVariable @Min(1) Long id) {
         return vehicleService.deleteById(id)
-                .map(this::enrichVehicleWithModel)
-                .map(ResponseEntity::ok)
+                .map(vehicle -> ResponseEntity.noContent().build())
                 .orElseThrow(() -> new ResourceNotFoundException(id, Vehicle.class));
     }
 
