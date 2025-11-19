@@ -80,7 +80,7 @@ public class BookingRepositoryTest {
         b.setExpectedEndDate(LocalDateTime.now().plusDays(1).plusHours(2));
         b.setFinalPrice(new BigDecimal("5.00"));
         b.setFinalConsumptionKwh(new BigDecimal("10.00"));
-        b.setState(BookingState.PENDING);
+        b.setState(BookingState.PENDING_ACCEPT);
         b.setVehicle(vehicle);
         b.setStation(station);
         return b;
@@ -101,7 +101,7 @@ public class BookingRepositoryTest {
 
         Optional<Booking> found = bookingRepository.findById(saved.getId());
         assertThat(found).isPresent();
-        assertThat(found.get().getState()).isEqualTo(BookingState.PENDING);
+        assertThat(found.get().getState()).isEqualTo(BookingState.PENDING_ACCEPT);
 
         bookingRepository.delete(found.get());
         assertThat(bookingRepository.findById(saved.getId())).isEmpty();
