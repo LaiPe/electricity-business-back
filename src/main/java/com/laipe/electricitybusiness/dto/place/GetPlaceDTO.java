@@ -14,8 +14,8 @@ public class GetPlaceDTO {
     @JsonProperty("name")
     private String name;
 
-    @JsonProperty("instructions")
-    private String instructions;
+    @JsonProperty("description")
+    private String description;
 
     @JsonProperty("owner_id")
     private Long ownerId;

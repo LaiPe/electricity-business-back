@@ -10,5 +10,5 @@ public class PostPlaceDTO {
     @Size(min = 2, max = 200)
     private String name;
 
-    private String instructions;
+    private String description;
 }

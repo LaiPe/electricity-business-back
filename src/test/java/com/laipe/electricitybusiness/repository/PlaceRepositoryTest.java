@@ -43,7 +43,7 @@ public class PlaceRepositoryTest {
     private Place createPlace(User owner) {
         Place p = new Place();
         p.setName("Parking Central");
-        p.setInstructions("Suivez les panneaux");
+        p.setDescription("Suivez les panneaux");
         p.setOwner(owner);
         return p;
     }

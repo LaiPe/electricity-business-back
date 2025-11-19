@@ -23,8 +23,8 @@ public class Place {
     private String name;
 
     @Lob
-    @Column(name = "instructions")
-    private String instructions;
+    @Column(name = "description")
+    private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
