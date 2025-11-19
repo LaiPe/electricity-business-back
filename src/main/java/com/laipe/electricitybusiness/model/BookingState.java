@@ -1,7 +1,9 @@
 package com.laipe.electricitybusiness.model;
 
 public enum BookingState {
-    PENDING,
+    PENDING_ACCEPT,
+    ACCEPTED,
+    REJECTED,
     ONGOING,
     COMPLETED,
     CANCELLED

@@ -49,6 +49,7 @@ public class Booking {
     private Integer reviewGrade;
 
     @Lob
+    @Column(name = "review_comment")
     private String reviewComment;
 
     @NotNull

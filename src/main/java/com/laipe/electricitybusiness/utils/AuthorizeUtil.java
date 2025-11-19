@@ -1,6 +1,7 @@
 package com.laipe.electricitybusiness.utils;
 
 import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
+import com.laipe.electricitybusiness.service.BookingService;
 import com.laipe.electricitybusiness.service.ChargingStationService;
 import com.laipe.electricitybusiness.service.PlaceService;
 import com.laipe.electricitybusiness.service.VehicleService;
@@ -16,6 +17,7 @@ public class AuthorizeUtil {
     private final VehicleService vehicleService;
     private final PlaceService placeService;
     private final ChargingStationService chargingStationService;
+    private final BookingService bookingService;
 
     public boolean isOwnerOfVehicle(Long vehicleId) {
         StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
@@ -44,6 +46,38 @@ public class AuthorizeUtil {
         }
         return chargingStationService.getById(stationId)
                 .map(station -> isOwnerOfPlace(station.getPlace().getId()))
+                .orElse(false);
+    }
+
+    public boolean isStationOwnerOfBooking(Long bookingId) {
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        if (currentUser == null) {
+            return false;
+        }
+        return bookingService.getById(bookingId)
+                .map(booking -> isOwnerOfChargingStation(booking.getStation().getId()))
+                .orElse(false);
+    }
+
+    public boolean isVehicleOwnerOfBooking(Long bookingId) {
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        if (currentUser == null) {
+            return false;
+        }
+        return bookingService.getById(bookingId)
+                .map(booking -> isOwnerOfVehicle(booking.getVehicle().getId()))
+                .orElse(false);
+    }
+
+    public boolean isPartOfBooking(Long bookingId) {
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        if (currentUser == null) {
+            return false;
+        }
+        return bookingService.getById(bookingId)
+                .map(booking -> isOwnerOfChargingStation(booking.getStation().getId()) ||
+                        isOwnerOfVehicle(booking.getVehicle().getId())
+                )
                 .orElse(false);
     }
 }

@@ -81,6 +81,13 @@ public class ControllerExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
+    @ExceptionHandler(InvalidBookingState.class)
+    public ResponseEntity<ErrorResponse> handleInvalidBookingStateChange(InvalidVerificationCodeException ex) {
+        log.warn("Caught InvalidBookingStateChange");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(ex.getMessage()));
+    }
+
     @Getter
     @AllArgsConstructor
     public static class ErrorResponse {
