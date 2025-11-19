@@ -61,4 +61,9 @@ public class Booking {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "station_id", nullable = false)
     private ChargingStation station;
+
+    public boolean isActive() {
+        return this.state == BookingState.ACCEPTED
+                || this.state == BookingState.ONGOING;
+    }
 }

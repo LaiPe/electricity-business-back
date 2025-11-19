@@ -5,11 +5,16 @@ import com.laipe.electricitybusiness.dto.chargingstations.*;
 import com.laipe.electricitybusiness.model.ChargingStation;
 import com.laipe.electricitybusiness.service.ChargingStationService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/stations")
@@ -63,6 +68,32 @@ public class ChargingStationController {
                 .map(ignored -> ResponseEntity.noContent().build())
                 .orElseThrow(() -> new ResourceNotFoundException(id, ChargingStation.class));
 
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<List<GetChargingStationDTO>> getNearbyStations(@RequestBody @Valid QueryNearbyChargingStationDTO dto) {
+        return ResponseEntity.ok(chargingStationService.getNearbyStations(
+                dto.getLongitude(),
+                dto.getLatitude(),
+                dto.getRadiusInKm()
+        ));
+    }
+
+    @GetMapping("/free")
+    public ResponseEntity<List<GetChargingStationDTO>> getFreeStations(
+            @RequestParam("datetime") @NotNull @FutureOrPresent LocalDateTime datetime
+    ) {
+        return ResponseEntity.ok(chargingStationService.getFreeStations(datetime));
+    }
+
+    @GetMapping("/nearby-and-free")
+    public ResponseEntity<List<GetChargingStationDTO>> getNearbyStations(@RequestBody @Valid QueryNearbyFreeChargingStationDTO dto) {
+        return ResponseEntity.ok(chargingStationService.getFreeNearbyStations(
+                dto.getLongitude(),
+                dto.getLatitude(),
+                dto.getRadiusInKm(),
+                dto.getDatetime()
+        ));
     }
 
 }

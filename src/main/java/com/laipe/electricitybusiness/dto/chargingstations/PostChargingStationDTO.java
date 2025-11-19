@@ -14,10 +14,14 @@ public class PostChargingStationDTO {
 
     @NotNull
     @Digits(integer = 2, fraction = 8)
+    @Min(-90)
+    @Max(90)
     private BigDecimal latitude;
 
     @NotNull
     @Digits(integer = 2, fraction = 8)
+    @Min(-180)
+    @Max(180)
     private BigDecimal longitude;
 
     @NotNull

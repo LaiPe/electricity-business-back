@@ -25,13 +25,13 @@ public class ChargingStation {
     private String name;
 
     @NotNull
-    @Digits(integer = 2, fraction = 8)
-    @Column(name = "latitude", precision = 10, scale = 8, nullable = false)
+    @Digits(integer = 3, fraction = 8)
+    @Column(name = "latitude", precision = 10, scale = 7, nullable = false)
     private BigDecimal latitude;
 
     @NotNull
-    @Digits(integer = 2, fraction = 8)
-    @Column(name = "longitude", precision = 10, scale = 8, nullable = false)
+    @Digits(integer = 3, fraction = 8)
+    @Column(name = "longitude", precision = 10, scale = 7, nullable = false)
     private BigDecimal longitude;
 
     @NotNull
