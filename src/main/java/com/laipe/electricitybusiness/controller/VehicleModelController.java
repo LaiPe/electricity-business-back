@@ -4,16 +4,15 @@ import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundExceptio
 import com.laipe.electricitybusiness.model.VehicleModel;
 import com.laipe.electricitybusiness.service.VehicleModelService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @AllArgsConstructor
 @RestController()
+@Slf4j
 @RequestMapping("/vehicles/models")
 public class VehicleModelController {
     private final VehicleModelService service;
@@ -28,5 +27,11 @@ public class VehicleModelController {
         return service.getById(id)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ResourceNotFoundException(id, VehicleModel.class));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<VehicleModel>> search(@RequestParam("q") String q) {
+        log.info("Searching vehicle models with query: {}", q);
+        return ResponseEntity.ok(service.search(q));
     }
 }
