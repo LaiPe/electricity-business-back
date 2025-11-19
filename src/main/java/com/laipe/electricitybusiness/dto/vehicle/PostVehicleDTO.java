@@ -1,9 +1,7 @@
 package com.laipe.electricitybusiness.dto.vehicle;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -13,11 +11,6 @@ public class PostVehicleDTO {
     @Size(min = 2, max = 15)
     @JsonProperty("registration_number")
     private String registrationNumber;
-
-    @NotNull
-    @Min(1)
-    @JsonProperty("owner_id")
-    private Long ownerId;
 
     @NotBlank
     @JsonProperty("vehicle_model_id")
