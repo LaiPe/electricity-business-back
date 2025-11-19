@@ -6,9 +6,11 @@ import com.laipe.electricitybusiness.model.BookingState;
 import com.laipe.electricitybusiness.repository.BookingRepository;
 import com.laipe.electricitybusiness.service.generic.GenericJPAService;
 import com.laipe.electricitybusiness.utils.ModelUtil;
+import com.laipe.electricitybusiness.utils.PowerCalculatorUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -17,10 +19,12 @@ import java.util.Optional;
 @Transactional
 public class BookingService extends GenericJPAService<Booking, Long> {
     private final BookingRepository bookingRepository;
+    private final PowerCalculatorUtil powerCalculatorUtil;
 
-    public BookingService(BookingRepository bookingRepository) {
+    public BookingService(BookingRepository bookingRepository, PowerCalculatorUtil powerCalculatorUtil) {
         super(bookingRepository);
         this.bookingRepository = bookingRepository;
+        this.powerCalculatorUtil = powerCalculatorUtil;
     }
 
     @Override
@@ -101,12 +105,19 @@ public class BookingService extends GenericJPAService<Booking, Long> {
         Booking updatedBooking = new Booking();
         updatedBooking.setState(BookingState.COMPLETED);
         updatedBooking.setActualEndDate(LocalDateTime.now());
-        // TODO : calculate total cost
-        // TODO : calculate consumed energy
 
         return bookingRepository.findById(id)
                 .map(existingBooking -> {
                     if (existingBooking.getState() == BookingState.ONGOING) {
+                        updatedBooking.setFinalConsumptionKwh(BigDecimal.valueOf(powerCalculatorUtil.calculateConsumedPower(
+                                existingBooking.getStation().getPowerKw().doubleValue(),
+                                existingBooking.getStartDate(),
+                                updatedBooking.getActualEndDate()
+                        )));
+                        updatedBooking.setFinalPrice(BigDecimal.valueOf(powerCalculatorUtil.calculateCost(
+                                updatedBooking.getFinalConsumptionKwh().doubleValue(),
+                                existingBooking.getStation().getPricePerKwh().doubleValue()
+                        )));
                         ModelUtil.copyFields(updatedBooking, existingBooking);
                         return bookingRepository.save(existingBooking);
                     } else {
