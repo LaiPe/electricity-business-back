@@ -23,7 +23,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController()
-@RequestMapping("/vehicles")
+@RequestMapping("/api/vehicles")
 public class VehicleController {
 
     private final SecurityUtil securityUtil;

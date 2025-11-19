@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @RestController()
 @Slf4j
-@RequestMapping("/vehicles/models")
+@RequestMapping("/api/vehicles/models")
 public class VehicleModelController {
     private final VehicleModelService service;
 
