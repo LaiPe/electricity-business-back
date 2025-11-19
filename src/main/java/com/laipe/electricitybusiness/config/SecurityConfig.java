@@ -42,9 +42,13 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Désactivation de CSRF pour les API REST
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Activer CORS avec la source personnalisée
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/register").permitAll() // Autoriser les routes d'inscription
+                        .requestMatchers("/api/auth/register").permitAll()
                         .requestMatchers("/api/auth/login").permitAll() // Autoriser les routes d'authentification
                         .requestMatchers("/h2-console/**").permitAll() // Autoriser l'accès à la console H2
+                        .requestMatchers("/api/stations/free").permitAll()
+                        .requestMatchers("/api/stations/nearby").permitAll()
+                        .requestMatchers("/api/stations/nearby-and-free").permitAll() // Autoriser les recherches publiques de stations
+
                         .anyRequest().authenticated() // Toutes les autres requêtes nécessitent une authentification
                 )
                 .headers(headers -> headers
