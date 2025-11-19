@@ -9,6 +9,7 @@ import com.laipe.electricitybusiness.service.generic.GenericJPAService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -38,7 +39,7 @@ public class VehicleService extends GenericJPAService<Vehicle, Long> {
         return super.update(entity, id);
     }
 
-    public Optional<Vehicle> getByOwnerId(Long ownerId) {
+    public List<Vehicle> getAllByOwnerId(Long ownerId) {
         return vehicleRepository.findByOwnerId(ownerId);
     }
 }

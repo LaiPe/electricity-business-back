@@ -60,14 +60,16 @@ public class VehicleController {
     }
 
     @GetMapping()
-    public ResponseEntity<GetVehicleDTO> getByOwnerId() {
+    public ResponseEntity<List<GetVehicleDTO>> getAllByOwnerId() {
         StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
         Long ownerId = currentUser.getId();
 
-        return vehicleService.getByOwnerId(ownerId)
+        List<GetVehicleDTO> dtos = vehicleService.getAllByOwnerId(ownerId)
+                .stream()
                 .map(this::enrichVehicleWithModel)
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new ResourceNotFoundException(ownerId, Vehicle.class));
+                .toList();
+
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/all")
