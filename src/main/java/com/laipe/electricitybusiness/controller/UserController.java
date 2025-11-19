@@ -4,15 +4,16 @@ import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundExceptio
 import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
 import com.laipe.electricitybusiness.dto.user.*;
 import com.laipe.electricitybusiness.model.User;
+import com.laipe.electricitybusiness.service.CookieService;
 import com.laipe.electricitybusiness.service.UserService;
 import com.laipe.electricitybusiness.utils.SecurityUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final CookieService cookieService;
 
     private final SecurityUtil securityUtil;
 
@@ -70,11 +72,10 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GetUserDTO> deleteById(@PathVariable @Min(1) Long id) {
+    public ResponseEntity<Object> deleteById(@PathVariable @Min(1) Long id) {
         return userService.deleteById(id)
-                .map(getUserMapper::toDto)
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
+                .map(user -> ResponseEntity.noContent().build())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     @GetMapping("/me")
@@ -125,6 +126,18 @@ public class UserController {
         return userService.update(updateEmailMapper.toEntity(updateDTO), currentUser.getId())
                 .map(getUserMapper::toDto)
                 .map(ResponseEntity::ok)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
+    @DeleteMapping("/me/delete")
+    public ResponseEntity<Object> deleteMe(HttpServletResponse response) {
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+
+        // Clear the access token cookie
+        response.addCookie(cookieService.createClearAccessTokenCookie());
+
+        return userService.deleteById(currentUser.getId())
+                .map(user -> ResponseEntity.noContent().build())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }
