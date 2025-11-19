@@ -53,6 +53,6 @@ public class ChargingStation {
     private Place place;
 
 
-    @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "station")
     private List<Booking> bookings;
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.Arrays;
 
 @Slf4j
 @RestControllerAdvice
@@ -26,6 +27,12 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleSQLIntegrityConstraintViolationException(final SQLIntegrityConstraintViolationException exception) {
         log.warn("Caught SQLIntegrityConstraintViolationException: {}", exception.getMessage());
+        // Si SQLIntegrityConstraintViolationException possède une stack de sa stacktrace de type ChargingStationController, on peut supposer que l'erreur vient d'une contrainte liée aux stations de charge
+        if (Arrays.stream(exception.getStackTrace()).anyMatch(element -> element.getClassName().contains("ChargingStationController"))) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponse("This charging station cannot be deleted because there are existing bookings associated with it."));
+        }
+
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse("Data constraint violation. Please check required fields, their formats and values."));
     }

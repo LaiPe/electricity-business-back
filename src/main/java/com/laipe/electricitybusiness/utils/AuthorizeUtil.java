@@ -1,6 +1,7 @@
 package com.laipe.electricitybusiness.utils;
 
 import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
+import com.laipe.electricitybusiness.service.ChargingStationService;
 import com.laipe.electricitybusiness.service.PlaceService;
 import com.laipe.electricitybusiness.service.VehicleService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ public class AuthorizeUtil {
     private final SecurityUtil securityUtil;
     private final VehicleService vehicleService;
     private final PlaceService placeService;
+    private final ChargingStationService chargingStationService;
 
     public boolean isOwnerOfVehicle(Long vehicleId) {
         StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
@@ -32,6 +34,16 @@ public class AuthorizeUtil {
         }
         return placeService.getById(placeId)
                 .map(place -> place.getOwner().getId().equals(currentUser.getId()))
+                .orElse(false);
+    }
+
+    public boolean isOwnerOfChargingStation(Long stationId) {
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        if (currentUser == null) {
+            return false;
+        }
+        return chargingStationService.getById(stationId)
+                .map(station -> isOwnerOfPlace(station.getPlace().getId()))
                 .orElse(false);
     }
 }
