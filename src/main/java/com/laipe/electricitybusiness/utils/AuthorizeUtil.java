@@ -1,6 +1,7 @@
 package com.laipe.electricitybusiness.utils;
 
 import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
+import com.laipe.electricitybusiness.service.PlaceService;
 import com.laipe.electricitybusiness.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class AuthorizeUtil {
     private final SecurityUtil securityUtil;
     private final VehicleService vehicleService;
+    private final PlaceService placeService;
 
     public boolean isOwnerOfVehicle(Long vehicleId) {
         StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
@@ -20,6 +22,16 @@ public class AuthorizeUtil {
         }
         return vehicleService.getById(vehicleId)
                 .map(vehicle -> vehicle.getOwner().getId().equals(currentUser.getId()))
+                .orElse(false);
+    }
+
+    public boolean isOwnerOfPlace(Long placeId) {
+        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        if (currentUser == null) {
+            return false;
+        }
+        return placeService.getById(placeId)
+                .map(place -> place.getOwner().getId().equals(currentUser.getId()))
                 .orElse(false);
     }
 }
