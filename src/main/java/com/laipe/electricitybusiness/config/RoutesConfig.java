@@ -20,7 +20,9 @@ public class RoutesConfig {
                 PathPatternRequestMatcher.withDefaults().matcher("/api/stations/free"),
                 PathPatternRequestMatcher.withDefaults().matcher("/api/stations/nearby"),
                 PathPatternRequestMatcher.withDefaults().matcher("/api/stations/nearby-and-free"),
-                PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/api/stations/{id}")
+                PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/api/stations/{id}"),
+
+                PathPatternRequestMatcher.withDefaults().matcher("/actuator/health")
         );
     }
 
