@@ -19,25 +19,25 @@ Cette documentation liste tous les endpoints exposés par l'API Electricity Busi
 - **Description** : Crée un nouvel utilisateur avec le rôle USER, génère un code de vérification, crée un JWT et le place dans un cookie HTTP-only.
 
 ### `POST /api/auth/verify`
-- **Accès** : Authentifié
+- **Accès** : Authentifié (non vérifié)
 - **Corps** : `String` (code de vérification)
 - **Réponse** : `MessageResponse`
 - **Description** : Vérifie le code de vérification de l'utilisateur courant.
 
 ### `POST /api/auth/refresh-verification-code`
-- **Accès** : Authentifié
+- **Accès** : Authentifié (non vérifié)
 - **Corps** : Aucun
 - **Réponse** : `MessageResponse`
 - **Description** : Génère un nouveau code de vérification pour l'utilisateur courant.
 
 ### `GET /api/auth/status`
-- **Accès** : Authentifié
+- **Accès** : Authentifié (non vérifié ou banni)
 - **Corps** : Aucun
 - **Réponse** : `AuthResponse`
 - **Description** : Retourne le statut d'authentification et les informations de l'utilisateur courant.
 
 ### `POST /api/auth/logout`
-- **Accès** : Authentifié
+- **Accès** : Authentifié (non vérifié ou banni)
 - **Corps** : Aucun
 - **Réponse** : `204 No Content`
 - **Description** : Efface le cookie `access_token` côté client.
@@ -72,6 +72,16 @@ Cette documentation liste tous les endpoints exposés par l'API Electricity Busi
 - **Accès** : ADMIN uniquement
 - **Réponse** : `204 No Content`
 - **Description** : Supprime un utilisateur par son ID.
+
+### `PATCH /api/users/{id}/ban`
+- **Accès** : ADMIN uniquement
+- **Réponse** : `204 No Content`
+- **Description** : Banni un utilisateur par son ID.
+
+### `PATCH /api/users/{id}/unban`
+- **Accès** : ADMIN uniquement
+- **Réponse** : `204 No Content`
+- **Description** : Débanni un utilisateur par son ID.
 
 ### `GET /api/users/me`
 - **Accès** : Authentifié
