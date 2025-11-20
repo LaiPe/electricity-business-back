@@ -46,7 +46,7 @@ services:
       - eb-network
 
   app:
-    build: .
+    image: ghcr.io/laipe/laipe/electricity-business-back:latest
     container_name: electricity-business-api
     restart: always
     env_file:
