@@ -16,6 +16,9 @@ public class StatusUserDTO {
     @JsonProperty("username")
     private String username;
 
+    @JsonProperty("email")
+    private String email;
+
     @JsonProperty("banned")
     private Boolean banned;
 
