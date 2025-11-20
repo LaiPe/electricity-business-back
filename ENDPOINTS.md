@@ -241,15 +241,15 @@ Cette documentation liste tous les endpoints exposés par l'API Electricity Busi
 - **Réponse** : `List<GetChargingStationDTO>`
 - **Description** : Recherche les stations de recharge proches d'une position géographique donnée.
 
-### `GET /api/stations/free?datetime={datetime}`
+### `GET /api/stations/free`
 - **Accès** : Public
-- **Paramètres** : `datetime` (LocalDateTime au format ISO)
+- **Paramètres** : `QueryFreeChargingStationDTO` (startDatetime, endDatetime)
 - **Réponse** : `List<GetChargingStationDTO>`
 - **Description** : Liste les stations de recharge libres à une date/heure donnée.
 
 ### `GET /api/stations/nearby-and-free`
 - **Accès** : Public
-- **Corps** : `QueryNearbyFreeChargingStationDTO` (longitude, latitude, radiusInKm, datetime)
+- **Corps** : `QueryNearbyFreeChargingStationDTO` (longitude, latitude, radiusInKm, startDatetime, endDatetime)
 - **Réponse** : `List<GetChargingStationDTO>`
 - **Description** : Recherche les stations proches ET libres à une date/heure donnée.
 
