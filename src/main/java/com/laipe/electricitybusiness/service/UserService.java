@@ -85,10 +85,11 @@ public class UserService extends GenericJPAService<User, Long> implements UserDe
                 });
     }
 
-    public void banUser(Long userId) {
-        userRepository.findById(userId).ifPresent(user -> {
-            user.setBanned(true);
-            userRepository.save(user);
-        });
+    public Optional<User> banUser(Long userId) {
+        return userRepository.findById(userId)
+                .map(user -> {
+                    user.setBanned(true);
+                    return userRepository.save(user);
+                });
     }
 }
