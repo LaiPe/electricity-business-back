@@ -85,6 +85,14 @@ public class UserController {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
+    @PatchMapping("/{id}/unban")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Object> unbanUser(@PathVariable @Min(1) Long id) {
+        return userService.unbanUser(id)
+                .map(user -> ResponseEntity.noContent().build())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<GetUserDTO> me() {
         // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
