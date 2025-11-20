@@ -27,5 +27,9 @@ public class QueryNearbyFreeChargingStationDTO {
 
     @NotNull
     @FutureOrPresent
-    private LocalDateTime datetime;
+    LocalDateTime searchStart;
+
+    @NotNull
+    @FutureOrPresent
+    LocalDateTime searchEnd;
 }

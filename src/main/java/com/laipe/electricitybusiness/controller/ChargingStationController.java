@@ -5,15 +5,12 @@ import com.laipe.electricitybusiness.dto.chargingstations.*;
 import com.laipe.electricitybusiness.model.ChargingStation;
 import com.laipe.electricitybusiness.service.ChargingStationService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -80,10 +77,8 @@ public class ChargingStationController {
     }
 
     @GetMapping("/free")
-    public ResponseEntity<List<GetChargingStationDTO>> getFreeStations(
-            @RequestParam("datetime") @NotNull @FutureOrPresent LocalDateTime datetime
-    ) {
-        return ResponseEntity.ok(chargingStationService.getFreeStations(datetime));
+    public ResponseEntity<List<GetChargingStationDTO>> getFreeStations( @RequestBody @Valid QueryFreeChargingStationDTO dto) {
+        return ResponseEntity.ok(chargingStationService.getFreeStations(dto.getSearchStart(), dto.getSearchEnd()));
     }
 
     @GetMapping("/nearby-and-free")
@@ -92,7 +87,8 @@ public class ChargingStationController {
                 dto.getLongitude(),
                 dto.getLatitude(),
                 dto.getRadiusInKm(),
-                dto.getDatetime()
+                dto.getSearchStart(),
+                dto.getSearchEnd()
         ));
     }
 

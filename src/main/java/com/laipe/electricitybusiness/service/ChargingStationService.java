@@ -7,6 +7,7 @@ import com.laipe.electricitybusiness.model.ChargingStation;
 import com.laipe.electricitybusiness.repository.BookingRepository;
 import com.laipe.electricitybusiness.repository.ChargingStationRepository;
 import com.laipe.electricitybusiness.service.generic.GenericJPAService;
+import com.laipe.electricitybusiness.utils.DateUtil;
 import com.laipe.electricitybusiness.utils.GeolocatorUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
     private final BookingRepository bookingRepository;
 
     private final GeolocatorUtil geolocatorUtil;
+    private final DateUtil dateUtil;
 
     private final GetChargingStationMapper getChargingStationMapper;
 
@@ -31,12 +33,14 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
             ChargingStationRepository stationRepository,
             BookingRepository bookingRepository,
             GeolocatorUtil geolocatorUtil,
+            DateUtil dateUtil,
             GetChargingStationMapper getChargingStationMapper
     ) {
         super(stationRepository);
         this.stationRepository = stationRepository;
         this.bookingRepository = bookingRepository;
         this.geolocatorUtil = geolocatorUtil;
+        this.dateUtil = dateUtil;
         this.getChargingStationMapper = getChargingStationMapper;
     }
 
@@ -68,18 +72,19 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
 
     /**
      * Trouve toutes les bornes libres à un moment donné
-     * @param time Moment pour lequel on cherche les bornes libres
+     * @param searchStart Moment de début de la recherche
+     * @param searchEnd Moment de fin de la recherche
      * @return Liste des bornes libres au moment spécifié
      */
-    public List<GetChargingStationDTO> getFreeStations(LocalDateTime time) {
-        if (time == null) {
+    public List<GetChargingStationDTO> getFreeStations(LocalDateTime searchStart, LocalDateTime searchEnd) {
+        if (searchStart == null || searchEnd == null) {
             throw new IllegalArgumentException("Le temps ne peut pas être null");
         }
 
         List<ChargingStation> allStations = stationRepository.findAll();
         List<Booking> activeBookings = bookingRepository.findAll().stream()
                 .filter(Booking::isActive)
-                .filter(r -> time.isAfter(r.getStartDate()) && time.isBefore(r.getExpectedEndDate()))
+                .filter(r -> dateUtil.doOverlap(r.getStartDate(), r.getExpectedEndDate(), searchStart, searchEnd))
                 .toList();
 
         return allStations.stream()
@@ -97,12 +102,19 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
      * @param longitude Longitude du point central en degrés décimaux (-180 à 180)
      * @param latitude Latitude du point central en degrés décimaux (-90 à 90)
      * @param rayon Rayon de recherche en kilomètres
-     * @param time Moment pour lequel on cherche les bornes libres
+     * @param searchStart Moment de début de la recherche
+     * @param searchEnd Moment de fin de la recherche
      * @return Liste des bornes libres trouvées dans le rayon spécifié au moment donné
      * @throws IllegalArgumentException si le temps est null ou si les coordonnées sont invalides
      */
-    public List<GetChargingStationDTO> getFreeNearbyStations(BigDecimal longitude, BigDecimal latitude, Integer rayon, LocalDateTime time) {
-        if (time == null) {
+    public List<GetChargingStationDTO> getFreeNearbyStations(
+            BigDecimal longitude,
+            BigDecimal latitude,
+            Integer rayon,
+            LocalDateTime searchStart,
+            LocalDateTime searchEnd
+    ) {
+        if (searchStart == null || searchEnd == null) {
             throw new IllegalArgumentException("Le temps ne peut pas être null");
         }
         if (longitude == null || latitude == null) {
@@ -116,7 +128,7 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
         }
 
         // Obtenir les bornes libres au moment donné
-        List<GetChargingStationDTO> freeBornes = getFreeStations(time);
+        List<GetChargingStationDTO> freeBornes = getFreeStations(searchStart, searchEnd);
 
         // Obtenir les bornes dans le rayon spécifié
         List<GetChargingStationDTO> nearbyBornes = getNearbyStations(longitude, latitude, rayon);

@@ -5,6 +5,7 @@ import com.laipe.electricitybusiness.model.Booking;
 import com.laipe.electricitybusiness.model.BookingState;
 import com.laipe.electricitybusiness.repository.BookingRepository;
 import com.laipe.electricitybusiness.service.generic.GenericJPAService;
+import com.laipe.electricitybusiness.utils.DateUtil;
 import com.laipe.electricitybusiness.utils.ModelUtil;
 import com.laipe.electricitybusiness.utils.PowerCalculatorUtil;
 import jakarta.transaction.Transactional;
@@ -20,15 +21,32 @@ import java.util.Optional;
 public class BookingService extends GenericJPAService<Booking, Long> {
     private final BookingRepository bookingRepository;
     private final PowerCalculatorUtil powerCalculatorUtil;
+    private final DateUtil dateUtil;
 
-    public BookingService(BookingRepository bookingRepository, PowerCalculatorUtil powerCalculatorUtil) {
+    public BookingService(
+            BookingRepository bookingRepository,
+            PowerCalculatorUtil powerCalculatorUtil,
+            DateUtil dateUtil
+    ) {
         super(bookingRepository);
         this.bookingRepository = bookingRepository;
         this.powerCalculatorUtil = powerCalculatorUtil;
+        this.dateUtil = dateUtil;
     }
 
     @Override
     public Booking create(Booking entity) {
+        bookingRepository.findAllByStationId(entity.getStation().getId())
+                .forEach(existingBooking -> {
+                    if (dateUtil.doOverlap(
+                            existingBooking.getStartDate(),
+                            existingBooking.getExpectedEndDate(),
+                            entity.getStartDate(),
+                            entity.getExpectedEndDate()
+                    )) {
+                        throw new InvalidBookingState("The station is already booked for the selected time interval.");
+                    }
+                });
         entity.setState(BookingState.PENDING_ACCEPT);
         return super.create(entity);
     }
