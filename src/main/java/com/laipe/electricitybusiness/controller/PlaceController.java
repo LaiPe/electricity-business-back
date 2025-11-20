@@ -1,7 +1,6 @@
 package com.laipe.electricitybusiness.controller;
 
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
-import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
 import com.laipe.electricitybusiness.dto.place.GetPlaceDTO;
 import com.laipe.electricitybusiness.dto.place.GetPlaceMapper;
 import com.laipe.electricitybusiness.dto.place.PostPlaceDTO;
@@ -34,11 +33,12 @@ public class PlaceController {
 
     @PostMapping
     public ResponseEntity<GetPlaceDTO> create(@RequestBody @Valid PostPlaceDTO postPlaceDTO) {
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
         Place place = postPlaceMapper.toEntity(postPlaceDTO);
         place.setOwner(new User());
-        place.getOwner().setId(currentUser.getId());
+        place.getOwner().setId(userId);
 
         log.info("Creating place {}", place);
 
@@ -47,10 +47,10 @@ public class PlaceController {
 
     @GetMapping
     public ResponseEntity<List<GetPlaceDTO>> getAllByOwnerId() {
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
-        Long ownerId = currentUser.getId();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
-        List<GetPlaceDTO> places = placeService.getAllByOwnerId(ownerId)
+        List<GetPlaceDTO> places = placeService.getAllByOwnerId(userId)
                 .stream()
                 .map(getPlaceMapper::toDto)
                 .toList();

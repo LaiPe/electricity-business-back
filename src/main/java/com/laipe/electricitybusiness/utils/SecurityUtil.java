@@ -1,6 +1,5 @@
 package com.laipe.electricitybusiness.utils;
 
-import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
 import com.laipe.electricitybusiness.service.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,30 +50,23 @@ public class SecurityUtil {
     }
 
     /**
-     * Tente d'extraire le username et l'id à partir d'un token JWT, puis de les retourner dans un GetUserDTO.
+     * Tente d'extraire le username et l'id à partir d'un token JWT, puis de les retourner dans un StrictUserDTO.
      *
-     * @return GetUserDTO rempli si le token est présent et valide selon JwtService, sinon null
+     * @return StrictUserDTO rempli si le token est présent et valide selon JwtService, sinon null
      */
-    public StrictUserDTO getCurrentUserFromToken(String token) {
+    public Long getUserIdFromToken(String token) {
         if (token == null || token.isBlank()) return null;
 
         try {
-            String username = jwtService.extractUsername(token);
-            Long id = jwtService.extractUserId(token);
-            if (username == null && id == null) return null;
-
-            StrictUserDTO dto = new StrictUserDTO();
-            dto.setUsername(username);
-            dto.setId(id);
-            return dto;
+            return jwtService.extractUserId(token);
         } catch (Exception e) {
             log.warn("Erreur lors de l'extraction des claims depuis le token: {}", e.getMessage());
             return null;
         }
     }
 
-    public StrictUserDTO getCurrentStrictUserFromAuthentification() {
+    public Long getUserIdFromAuthentification() {
         String token = getTokenFromAuthentication();
-        return getCurrentUserFromToken(token);
+        return getUserIdFromToken(token);
     }
 }

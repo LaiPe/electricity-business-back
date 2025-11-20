@@ -1,7 +1,6 @@
 package com.laipe.electricitybusiness.controller;
 
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
-import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
 import com.laipe.electricitybusiness.dto.booking.*;
 import com.laipe.electricitybusiness.model.Booking;
 import com.laipe.electricitybusiness.service.BookingService;
@@ -50,9 +49,10 @@ public class BookingController {
 
     @GetMapping("/as-vehicle-owner")
     public ResponseEntity<List<GetBookingDTO>> getBookingsAsVehicleOwner() {
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
-        List<GetBookingDTO> bookings = bookingService.getAllByVehicleOwnerId(currentUser.getId())
+        List<GetBookingDTO> bookings = bookingService.getAllByVehicleOwnerId(userId)
                 .stream()
                 .map(getBookingMapper::toDto)
                 .toList();
@@ -61,9 +61,10 @@ public class BookingController {
 
     @GetMapping("/as-station-owner")
     public ResponseEntity<List<GetBookingDTO>> getBookingsAsStationOwner() {
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
-        List<GetBookingDTO> bookings = bookingService.getAllByStationOwnerId(currentUser.getId())
+        List<GetBookingDTO> bookings = bookingService.getAllByStationOwnerId(userId)
                 .stream()
                 .map(getBookingMapper::toDto)
                 .toList();

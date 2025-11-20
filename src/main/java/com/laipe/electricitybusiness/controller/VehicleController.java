@@ -2,7 +2,6 @@ package com.laipe.electricitybusiness.controller;
 
 import com.laipe.electricitybusiness.controller.handler.IntegrityConstraintViolationException;
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
-import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
 import com.laipe.electricitybusiness.dto.vehicle.GetVehicleDTO;
 import com.laipe.electricitybusiness.dto.vehicle.GetVehicleMapper;
 import com.laipe.electricitybusiness.dto.vehicle.PostVehicleDTO;
@@ -48,11 +47,12 @@ public class VehicleController {
 
     @PostMapping
     public ResponseEntity<GetVehicleDTO> create(@RequestBody @Valid PostVehicleDTO postVehicleDTO) {
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
         // Set the owner of the vehicle to the current user
         Vehicle vehicle = postVehicleMapper.toEntity(postVehicleDTO);
-        vehicle.getOwner().setId(currentUser.getId());
+        vehicle.getOwner().setId(userId);
 
         Vehicle createdVehicle = vehicleService.create(vehicle);
         GetVehicleDTO dto = enrichVehicleWithModel(createdVehicle);
@@ -61,10 +61,10 @@ public class VehicleController {
 
     @GetMapping()
     public ResponseEntity<List<GetVehicleDTO>> getAllByOwnerId() {
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
-        Long ownerId = currentUser.getId();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
-        List<GetVehicleDTO> dtos = vehicleService.getAllByOwnerId(ownerId)
+        List<GetVehicleDTO> dtos = vehicleService.getAllByOwnerId(userId)
                 .stream()
                 .map(this::enrichVehicleWithModel)
                 .toList();

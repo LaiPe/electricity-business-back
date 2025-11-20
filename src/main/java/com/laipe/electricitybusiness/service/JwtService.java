@@ -1,5 +1,6 @@
 package com.laipe.electricitybusiness.service;
 
+import com.laipe.electricitybusiness.dto.auth.StatusUserDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -8,7 +9,6 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -29,13 +29,13 @@ public class JwtService {
      *
      * @param extraClaims claims supplémentaires à inclure dans le token
      * @param jwtExpiration la durée de validité
-     * @param username le nom d'utilisateur
+     * @param userId l'id de l'utilisateur
      * @return le token JWT généré
      */
-    public String generateToken(Map<String, Object> extraClaims, String username, long jwtExpiration) {
+    public String generateToken(Map<String, Object> extraClaims, Long userId, long jwtExpiration) {
         return Jwts.builder()
                 .setClaims(extraClaims)
-                .setSubject(username)
+                .setSubject(String.valueOf(userId))
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -45,16 +45,11 @@ public class JwtService {
     /**
      * Génère un token JWT avec une durée de validité par défaut.
      *
-     * @param username le nom d'utilisateur
+     * @param userId l'id de l'utilisateur
      * @return le token JWT généré
      */
-    public String generateToken(String username) {
-        return generateToken(Map.of(), username, 1000 * 60 * 15); // 15 minutes
-    }
-
-    // Nouvelle surcharge : inclure l'id utilisateur dans les claims
-    public String generateToken(String username, Long userId) {
-        return generateToken(Map.of("id", userId), username, 1000 * 60 * 15);
+    public String generateToken(Long userId) {
+        return generateToken(Map.of(), userId, 1000 * 60 * 15); // 15 minutes
     }
 
     // Méthode pour extraire **tous les "claims"** (les données contenues dans le token).
@@ -81,27 +76,6 @@ public class JwtService {
     }
 
     /**
-     * Méthode utilitaire pour extraire l'id utilisateur stocké dans les claims.
-     * Retourne null si le claim est absent ou ne peut être converti en Long.
-     */
-    public Long extractUserId(String token) {
-        Object idObj = extractClaim(token, claims -> claims.get("id"));
-        if (idObj == null) return null;
-        if (idObj instanceof Integer) {
-            return ((Integer) idObj).longValue();
-        }
-        if (idObj instanceof Long) {
-            return (Long) idObj;
-        }
-        try {
-            return Long.valueOf(idObj.toString());
-        } catch (NumberFormatException e) {
-            log.warn("Impossible de convertir le claim 'id' en Long: {}", idObj);
-            return null;
-        }
-    }
-
-    /**
      * Vérifie si un token JWT est expiré.
      *
      * @param token le token JWT
@@ -115,12 +89,12 @@ public class JwtService {
      * Valide un token JWT en vérifiant le nom d'utilisateur et la date d'expiration.
      *
      * @param token le token JWT
-     * @param userDetails les détails de l'utilisateur à vérifier
+     * @param user les détails de l'utilisateur à vérifier
      * @return true si le token est valide, false sinon
      */
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public boolean isTokenValid(String token, StatusUserDTO user) {
+        final Long userId = extractUserId(token);
+        return (userId.equals(user.getId()) && !isTokenExpired(token));
     }
 
     /**
@@ -139,8 +113,10 @@ public class JwtService {
      * @param token le token JWT
      * @return le nom d'utilisateur extrait
      */
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public Long extractUserId(String token) {
+        return extractClaim(token, claims -> {
+            return Long.valueOf(claims.getSubject());
+        });
     }
 
     /**

@@ -1,7 +1,6 @@
 package com.laipe.electricitybusiness.controller;
 
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
-import com.laipe.electricitybusiness.dto.auth.StrictUserDTO;
 import com.laipe.electricitybusiness.dto.user.*;
 import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.service.CookieService;
@@ -80,9 +79,10 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<GetUserDTO> me() {
-        StrictUserDTO dto = securityUtil.getCurrentStrictUserFromAuthentification();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
-        return ResponseEntity.ok(userService.getById(dto.getId())
+        return ResponseEntity.ok(userService.getById(userId)
                 .map(getUserMapper::toDto)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"))
         );
@@ -90,9 +90,10 @@ public class UserController {
 
     @PutMapping("/me")
     public ResponseEntity<GetUserDTO> updateDetails(@RequestBody @Valid UpdateUserDTO updateDTO) {
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
-        return userService.update(updateUserMapper.toEntity(updateDTO), currentUser.getId())
+        return userService.update(updateUserMapper.toEntity(updateDTO), userId)
                 .map(getUserMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -100,9 +101,10 @@ public class UserController {
 
     @PutMapping("/me/username")
     public ResponseEntity<GetUserDTO> updateUsername(@RequestBody @Valid UpdateUsernameDTO updateDTO) {
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
-        return userService.update(updateUsernameMapper.toEntity(updateDTO), currentUser.getId())
+        return userService.update(updateUsernameMapper.toEntity(updateDTO), userId)
                 .map(getUserMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -110,10 +112,11 @@ public class UserController {
 
     @PutMapping("/me/password")
     public ResponseEntity<GetUserDTO> updatePassword(@RequestBody @Valid UpdatePasswordDTO updateDTO) {
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
         // Hashage du password assuré par le service lors de la mise à jour
-        return userService.update(updatePasswordMapper.toEntity(updateDTO), currentUser.getId())
+        return userService.update(updatePasswordMapper.toEntity(updateDTO), userId)
                 .map(getUserMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -121,9 +124,10 @@ public class UserController {
 
     @PutMapping("/me/email")
     public ResponseEntity<GetUserDTO> updateEmail(@RequestBody @Valid UpdateEmailDTO updateDTO) {
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
-        return userService.update(updateEmailMapper.toEntity(updateDTO), currentUser.getId())
+        return userService.update(updateEmailMapper.toEntity(updateDTO), userId)
                 .map(getUserMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -131,12 +135,13 @@ public class UserController {
 
     @DeleteMapping("/me/delete")
     public ResponseEntity<Object> deleteMe(HttpServletResponse response) {
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
         // Clear the access token cookie
         response.addCookie(cookieService.createClearAccessTokenCookie());
 
-        return userService.deleteById(currentUser.getId())
+        return userService.deleteById(userId)
                 .map(user -> ResponseEntity.noContent().build())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }

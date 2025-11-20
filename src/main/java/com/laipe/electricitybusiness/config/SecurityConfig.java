@@ -16,7 +16,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -31,36 +33,35 @@ public class SecurityConfig {
 
     private final UserService userService;
     private final JwtAuthFilter jwtAuthFilter;
+    private final UserStatusFilter userStatusFilter;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final RoutesConfig routesConfig;
 
     @Value("${cors.allowed-origins}")
     private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        RequestMatcher publicRoutes = routesConfig.publicRoutes();
         http
                 .csrf(AbstractHttpConfigurer::disable) // Désactivation de CSRF pour les API REST
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Activer CORS avec la source personnalisée
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/register").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll() // Autoriser les routes d'authentification
-                        .requestMatchers("/h2-console/**").permitAll() // Autoriser l'accès à la console H2
-                        .requestMatchers("/api/stations/free").permitAll()
-                        .requestMatchers("/api/stations/nearby").permitAll()
-                        .requestMatchers("/api/stations/nearby-and-free").permitAll()
-                        .requestMatchers("/api/stations/{id}").permitAll() // Autoriser les recherches publiques de stations
-
+                        .requestMatchers(publicRoutes).permitAll() // Autoriser les routes publiques sans authentification
                         .anyRequest().authenticated() // Toutes les autres requêtes nécessitent une authentification
                 )
                 .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.sameOrigin())
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin()) // Pour permettre l'accès à la console H2
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Configuration du provider d'authentification
                 .authenticationProvider(authenticationProvider())
 
                 // Ajouter le filtre JWT avant UsernamePasswordAuthenticationFilter
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // Ajouter le filtre UserStatusFilter après UsernamePasswordAuthenticationFilter
+                .addFilterAfter(userStatusFilter, AuthorizationFilter.class);
 
         return http.build();
     }

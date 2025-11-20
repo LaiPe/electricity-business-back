@@ -43,14 +43,20 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) {
         log.info("Tentative de connexion pour l'utilisateur: {}", loginDTO.getUsername());
+
         // Authentifier l'utilisateur
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword())
+                new UsernamePasswordAuthenticationToken(
+                        loginDTO.getUsername(),
+                        loginDTO.getPassword()
+                )
         );
-        // Récupérer l'utilisateur pour obtenir son id
+
+        // Récupérer l'utilisateur
         User user = (User) userService.loadUserByUsername(loginDTO.getUsername());
+
         // Générer l'access token avec l'id utilisateur dans le payload
-        String accessToken = jwtService.generateToken(user.getUsername(), user.getId());
+        String accessToken = jwtService.generateToken(user.getId());
 
         // Déposer le token dans un cookie HTTP-only nommé "access_token"
         response.addCookie(cookieService.createAccessTokenCookie(accessToken));
@@ -76,7 +82,7 @@ public class AuthController {
         // TODO: Envoyer le code par email
 
         // Générer l'access token avec l'id utilisateur dans le payload
-        String accessToken = jwtService.generateToken(savedUser.getUsername(), savedUser.getId());
+        String accessToken = jwtService.generateToken(savedUser.getId());
 
         // Déposer le token dans un cookie HTTP-only nommé "access_token"
         response.addCookie(cookieService.createAccessTokenCookie(accessToken));
@@ -89,14 +95,13 @@ public class AuthController {
     public ResponseEntity<MessageResponse> verify(@Valid @RequestBody String code) {
         log.info("Vérification du code pour l'utilisateur courant");
 
-        // Récupérer l'utilisateur courant depuis le contexte de sécurité
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
-        Long userId = currentUser.getId();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
         // Valider le code de vérification
-        userService.verifyUser(userId, code)
+        User user = userService.verifyUser(userId, code)
                 .orElseThrow(() -> new InvalidVerificationCodeException());
-        log.info("Utilisateur vérifié avec succès: {}", currentUser.getUsername());
+        log.info("Utilisateur vérifié avec succès: {}", user.getUsername());
 
         return ResponseEntity.ok(new MessageResponse("User verified successfully"));
     }
@@ -105,9 +110,8 @@ public class AuthController {
     public ResponseEntity<MessageResponse> refreshVerificationCode() {
         log.info("Rafraîchissement du code de vérification pour l'utilisateur courant");
 
-        // Récupérer l'utilisateur courant depuis le contexte de sécurité
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
-        Long userId = currentUser.getId();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
         // Générer un nouveau code de vérification
         String newCode = verificationCodeService.generateCode();
@@ -119,10 +123,10 @@ public class AuthController {
         userToUpdate.setCodeExpirationDate(LocalDateTime.now().plusMinutes(verificationCodeService.getCODE_EXPIRATION_MINUTES()));
 
         // Mettre à jour l'utilisateur avec le nouveau code
-        userService.update(userToUpdate, userId)
+        User user = userService.update(userToUpdate, userId)
                 .orElseThrow(() -> new ResourceNotFoundException(userId, User.class));
 
-        log.info("Nouveau code de vérification généré pour l'utilisateur: {}", currentUser.getUsername());
+        log.info("Nouveau code de vérification généré pour l'utilisateur: {}", user.getUsername());
         return ResponseEntity.ok(new MessageResponse("New verification code generated: " + newCode));
     }
 
@@ -130,15 +134,15 @@ public class AuthController {
     public ResponseEntity<AuthResponse> checkAuthStatus() {
         log.info("Vérification du statut d'authentification de l'utilisateur courant");
 
-        // Récupérer l'utilisateur courant depuis le contexte de sécurité
-        StrictUserDTO currentUser = securityUtil.getCurrentStrictUserFromAuthentification();
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
 
         // Récupérer les informations de status de l'utilisateur
-        StatusUserDTO statusUser = userService.getById(currentUser.getId())
+        StatusUserDTO statusUser = userService.getById(userId)
                 .map(statusUserMapper::toDto)
-                .orElseThrow(() -> new ResourceNotFoundException(currentUser.getId(), User.class));
+                .orElseThrow(() -> new ResourceNotFoundException(userId, User.class));
 
-        log.info("Utilisateur authentifié: {}", currentUser.getUsername());
+        log.info("Utilisateur authentifié: {}", statusUser.getUsername());
         return ResponseEntity.ok(new AuthResponse("User is authenticated", statusUser));
     }
 
