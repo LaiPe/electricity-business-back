@@ -1,7 +1,7 @@
 services:
   mysql:
     image: mysql:8.3
-    container_name: eb-mysql_prod
+    container_name: electricity-business-mysql
     env_file:
       - .env.prod
     volumes:
@@ -14,10 +14,24 @@ services:
       retries: 5
     networks:
       - eb-network
+    user: "999:993"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL  # Aucune capability nécessaire
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    # Filesystem en lecture seule (empêche l'écriture sauf volumes)
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m          # Fichiers temporaires InnoDB
+      - /var/run/mysqld:noexec,nosuid,size=100m  # Socket et PID files
 
   mongodb:
     image: mongo:7.0
-    container_name: eb-mongodb_prod
+    container_name: electricity-business-mongodb
     env_file:
       - .env.prod
     volumes:
@@ -33,7 +47,7 @@ services:
 
   app:
     build: .
-    container_name: eb-app_prod
+    container_name: electricity-business-api
     restart: always
     env_file:
       - .env.prod
@@ -44,8 +58,6 @@ services:
         condition: service_healthy
       mongodb:
         condition: service_healthy
-    ports:
-      - "8080:8080" # exposer uniquement le port HTTP de l'application
     volumes:
       - app_logs:/var/log/eb-app
     healthcheck:
@@ -55,6 +67,14 @@ services:
       retries: 6
     networks:
       - eb-network
+    user: "999:993"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL  # Aucune capability nécessaire
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m  # Fichiers temporaires Spring
 
 volumes:
   mysql_data_prod:
@@ -65,4 +85,8 @@ volumes:
     driver: local
 
 networks:
+  caddy_network:
+    external: true
   eb-network:
+    driver: bridge
+    internal: true  # Réseau complètement isolé
