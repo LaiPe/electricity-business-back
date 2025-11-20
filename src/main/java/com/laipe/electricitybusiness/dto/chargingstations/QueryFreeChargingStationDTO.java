@@ -1,5 +1,6 @@
 package com.laipe.electricitybusiness.dto.chargingstations;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -11,9 +12,11 @@ public class QueryFreeChargingStationDTO {
 
     @NotNull
     @FutureOrPresent
-    LocalDateTime searchStart;
+    @JsonProperty("search_start")
+    private LocalDateTime searchStart;
 
     @NotNull
     @FutureOrPresent
-    LocalDateTime searchEnd;
+    @JsonProperty("search_end")
+    private LocalDateTime searchEnd;
 }
