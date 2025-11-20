@@ -66,6 +66,7 @@ services:
       timeout: 5s
       retries: 6
     networks:
+      - caddy_network
       - eb-network
     user: "999:993"
     security_opt:
