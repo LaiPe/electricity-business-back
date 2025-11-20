@@ -1,245 +1,318 @@
-# API - Liste des endpoints
+# Documentation des Endpoints de l'API
 
-## 1. Authentification & utilisateur
-
-- POST /auth/register
-  - Description : Inscription ; création d'un utilisateur en statut PENDING, envoi d'un code de validation par email
-  - Auth : non
-  - Body : { "email", "password", "fullName"?, "phone"? }
-  - Response : 201 Created
-
-- POST /auth/verify
-  - Description : Validation de l'inscription via code reçu par mail
-  - Auth : non
-  - Body : { "email", "code" }
-  - Response : 200 OK
-
-- POST /auth/login
-  - Description : Authentification, renvoie token JWT et informations utilisateur
-  - Auth : non
-  - Body : { "email", "password" }
-  - Response : 200 { "token", "user" }
-
-- POST /auth/logout
-  - Description : Révocation / blacklist du token (côté serveur) ou suppression côté client
-  - Auth : oui
-  - Response : 204 No Content
-
-- GET /users/me
-  - Description : Récupère le profil courant
-  - Auth : oui
-  - Response : 200 { user }
-
-- PUT /users/me
-  - Description : Met à jour des champs non sensibles du profil
-  - Auth : oui
-  - Body : { "fullName"?, "phone"?, ... }
-  - Response : 200 { user }
+Cette documentation liste tous les endpoints exposés par l'API Electricity Business.
 
 ---
 
-## 2. Modèles et véhicules
+## 1. Authentification (`/api/auth`)
 
-- GET /vehicle-models
-  - Description : Liste / recherche des modèles (source `vehicle-models.json` possible)
-  - Auth : optionnel
-  - Query : ?make=&model=&year=&page=&size=
+### `POST /api/auth/login`
+- **Accès** : Public
+- **Corps** : `LoginDTO` (username, password)
+- **Réponse** : `AuthResponse` (message + StatusUserDTO)
+- **Description** : Authentifie l'utilisateur, génère un JWT et le place dans un cookie HTTP-only nommé `access_token`.
 
-- POST /vehicles
-  - Description : Ajouter un véhicule pour l'utilisateur courant
-  - Auth : oui
-  - Body : { "modelId", "plate"?, "nickname"? }
-  - Response : 201
+### `POST /api/auth/register`
+- **Accès** : Public
+- **Corps** : `RegisterDTO`
+- **Réponse** : `AuthResponse` (message + StatusUserDTO)
+- **Description** : Crée un nouvel utilisateur avec le rôle USER, génère un code de vérification, crée un JWT et le place dans un cookie HTTP-only.
 
-- GET /vehicles
-  - Description : Lister véhicules de l'utilisateur courant
-  - Auth : oui
+### `POST /api/auth/verify`
+- **Accès** : Authentifié
+- **Corps** : `String` (code de vérification)
+- **Réponse** : `MessageResponse`
+- **Description** : Vérifie le code de vérification de l'utilisateur courant.
 
-- PUT /vehicles/{vehicleId}
-  - Description : Modifier véhicule
-  - Auth : oui (propriétaire du véhicule)
+### `POST /api/auth/refresh-verification-code`
+- **Accès** : Authentifié
+- **Corps** : Aucun
+- **Réponse** : `MessageResponse`
+- **Description** : Génère un nouveau code de vérification pour l'utilisateur courant.
 
-- DELETE /vehicles/{vehicleId}
-  - Description : Supprimer véhicule
-  - Auth : oui (propriétaire)
+### `GET /api/auth/status`
+- **Accès** : Authentifié
+- **Corps** : Aucun
+- **Réponse** : `AuthResponse`
+- **Description** : Retourne le statut d'authentification et les informations de l'utilisateur courant.
 
----
-
-## 3. Lieux (Place)
-
-- POST /places
-  - Description : Créer un lieu de recharge (par ex. parking, station)
-  - Auth : oui (ROLE_OWNER / ROLE_ADMIN)
-  - Body : { "name", "address", "latitude", "longitude", "description"? }
-  - Response : 201
-
-- PUT /places/{placeId}
-  - Description : Modifier un lieu
-  - Auth : oui (owner/admin)
-
-- GET /places/{placeId}
-  - Description : Détails d'un lieu, avec bornes associées
-  - Auth : optionnel
-
-- GET /places
-  - Description : Rechercher / filtrer lieux
-  - Query : ?q=&lat=&lon=&radius=&page=&size=
-
-- DELETE /places/{placeId}
-  - Description : Supprimer un lieu (contrainte : pas d'entité critique liée)
-  - Auth : oui (owner/admin)
+### `POST /api/auth/logout`
+- **Accès** : Authentifié
+- **Corps** : Aucun
+- **Réponse** : `204 No Content`
+- **Description** : Efface le cookie `access_token` côté client.
 
 ---
 
-## 4. Bornes de recharge (ChargingStation)
+## 2. Utilisateurs (`/api/users`)
 
-- POST /stations
-  - Description : Ajouter une borne attachée à un lieu
-  - Auth : oui (ROLE_OWNER / ROLE_ADMIN)
-  - Body : { "placeId", "name", "connectorType", "maxPowerKw", "enabled" }
-  - Response : 201
+### `POST /api/users`
+- **Accès** : ADMIN uniquement
+- **Corps** : `PostUserDTO`
+- **Réponse** : `GetUserDTO`
+- **Description** : Crée un nouvel utilisateur (usage administratif).
 
-- PUT /stations/{stationId}
-  - Description : Modifier les caractéristiques d'une borne
-  - Auth : oui (owner/admin)
+### `GET /api/users`
+- **Accès** : ADMIN uniquement
+- **Réponse** : `List<GetUserDTO>`
+- **Description** : Liste tous les utilisateurs.
 
-- GET /stations/{stationId}
-  - Description : Détails d'une borne (tarifs, disponibilité, statut)
-  - Auth : optionnel
+### `GET /api/users/{id}`
+- **Accès** : ADMIN uniquement
+- **Réponse** : `GetUserDTO`
+- **Description** : Récupère un utilisateur par son ID.
 
-- DELETE /stations/{stationId}
-  - Description : Supprimer une borne uniquement si elle n'a aucune réservation passée ou future
-  - Auth : oui (owner/admin)
-  - Responses : 204 ou 409 Conflict (si bookings existantes)
+### `PUT /api/users/{id}`
+- **Accès** : ADMIN uniquement
+- **Corps** : `PostUserDTO`
+- **Réponse** : `GetUserDTO`
+- **Description** : Met à jour un utilisateur par son ID.
 
----
+### `DELETE /api/users/{id}`
+- **Accès** : ADMIN uniquement
+- **Réponse** : `204 No Content`
+- **Description** : Supprime un utilisateur par son ID.
 
-## 5. Tarifs horaires (Rates / Pricing)
+### `GET /api/users/me`
+- **Accès** : Authentifié
+- **Réponse** : `GetUserDTO`
+- **Description** : Récupère les informations de l'utilisateur courant.
 
-- POST /stations/{stationId}/rates
-  - Description : Définir ou remplacer la grille tarifaire (liste d'intervalles horaires / prix)
-  - Auth : oui (owner/admin)
-  - Body : [ { "fromHour" (HH:mm), "toHour" (HH:mm), "pricePerKwh" (decimal) } ]
+### `PUT /api/users/me`
+- **Accès** : Authentifié
+- **Corps** : `UpdateUserDTO`
+- **Réponse** : `GetUserDTO`
+- **Description** : Met à jour les informations du profil de l'utilisateur courant.
 
-- GET /stations/{stationId}/rates
-  - Description : Récupérer tarifs actuels
-  - Auth : optionnel
+### `PUT /api/users/me/username`
+- **Accès** : Authentifié
+- **Corps** : `UpdateUsernameDTO`
+- **Réponse** : `GetUserDTO`
+- **Description** : Met à jour le nom d'utilisateur.
 
-- PATCH /stations/{stationId}/rates/{rateId}
-  - Description : Modifier un tarif spécifique
-  - Auth : oui (owner/admin)
+### `PUT /api/users/me/password`
+- **Accès** : Authentifié
+- **Corps** : `UpdatePasswordDTO`
+- **Réponse** : `GetUserDTO`
+- **Description** : Met à jour le mot de passe (hashé côté service).
 
----
+### `PUT /api/users/me/email`
+- **Accès** : Authentifié
+- **Corps** : `UpdateEmailDTO`
+- **Réponse** : `GetUserDTO`
+- **Description** : Met à jour l'adresse email.
 
-## 6. Recherche de bornes autour de soi (pour affichage carte)
-
-- GET /stations/nearby
-  - Description : Rechercher bornes disponibles autour d'un point géographique
-  - Auth : optionnel
-  - Query : ?lat={lat}&lon={lon}&radius={meters}&connectorType=&minPower=&availableOnly=true&page=&size=
-  - Response : 200 [ { stationId, placeId, lat, lon, available (bool), connectors[], currentTariff } ]
-
----
-
-## 7. Réservations (Booking)
-
-- POST /bookings
-  - Description : Effectuer une réservation (demande)
-  - Auth : oui
-  - Body : { "stationId", "vehicleId", "startAt", "endAt", "estimatedKwh"? }
-  - Response : 201 { "bookingId", "state" }
-
-- GET /bookings
-  - Description : Lister réservations de l'utilisateur (avec filtres)
-  - Auth : oui
-  - Query : ?state=ACTIVE,PAST,ALL&from=&to=&stationId=&page=&size=&fields=
-
-- GET /bookings/{bookingId}
-  - Description : Détails d'une réservation (autorisé au propriétaire de la réservation, propriétaire de la borne ou admin)
-  - Auth : oui
-
-- PATCH /bookings/{bookingId}/accept
-  - Description : Accepter une réservation (opérationnel/manager de la borne)
-  - Auth : oui (station owner)
-  - Response : 200
-
-- PATCH /bookings/{bookingId}/reject
-  - Description : Refuser une réservation (avec motif optionnel)
-  - Auth : oui (station owner)
-  - Body : { "reason"? }
-
-- PATCH /bookings/{bookingId}/cancel
-  - Description : Annuler une réservation (par le client avant le début)
-  - Auth : oui (booking owner)
-
-- GET /bookings/current
-  - Description : Réservations en cours pour l'utilisateur
-  - Auth : oui
-
-- GET /bookings/past
-  - Description : Réservations passées; possibilité de filtrer colonnes/infos
-  - Auth : oui
-  - Query : ?from=&to=&stationId=&page=&size=&fields=
+### `DELETE /api/users/me/delete`
+- **Accès** : Authentifié
+- **Réponse** : `204 No Content`
+- **Description** : Supprime le compte de l'utilisateur courant et efface le cookie d'accès.
 
 ---
 
-## 8. Reçus PDF & export Excel
+## 3. Modèles de véhicule (`/api/vehicles/models`)
 
-- GET /bookings/{bookingId}/receipt.pdf
-  - Description : Générer / télécharger le reçu PDF pour une réservation acceptée/terminée
-  - Auth : oui (booking owner / station owner / admin)
-  - Response : application/pdf
+### `GET /api/vehicles/models`
+- **Accès** : Authentifié
+- **Réponse** : `List<VehicleModel>`
+- **Description** : Liste tous les modèles de véhicules disponibles.
 
-- GET /bookings/export.xlsx
-  - Description : Exporter réservations (passées ou filtrées) au format Excel
-  - Auth : oui (owner/admin)
-  - Query : ?from=&to=&stationId=&userId=&fields=
-  - Response : application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+### `GET /api/vehicles/models/{id}`
+- **Accès** : Authentifié
+- **Réponse** : `VehicleModel`
+- **Description** : Récupère un modèle de véhicule par son ID.
 
----
-
-## 9. Webhooks / Notifications (optionnel)
-
-- POST /webhooks/booking-updates
-  - Description : Endpoint pour notifications externes (ex : système de paiement, opérateur de borne)
-  - Auth : signature/secret (pas JWT)
+### `GET /api/vehicles/models/search?q={query}`
+- **Accès** : Authentifié
+- **Paramètres** : `q` (query string de recherche)
+- **Réponse** : `List<VehicleModel>`
+- **Description** : Recherche des modèles de véhicules par texte.
 
 ---
 
-## Contrat minimal (par ressource)
-- Inputs : JSON pour POST/PUT/PATCH, paramètres query pour filtres
-- Outputs : JSON standard { "data": ..., "meta"?: { pagination } } ou types médias (PDF/XLSX)
-- Codes d'erreur usuels : 400 Validation, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 500 Server Error
+## 4. Véhicules (`/api/vehicles`)
 
-## Cas limites & règles métier importantes
-- Suppression de borne (`DELETE /stations/{id}`) : refusée (409) si réservation passée ou future liée.
-- Création de réservation : vérifier la disponibilité atomiquement pour éviter double-booking.
-- Validation inscription : code unique temporaire, TTL court.
-- Reçus PDF : seulement pour réservations acceptées/terminées.
-- Export Excel : accès restreint (ROLE_OWNER pour ses stations, ROLE_ADMIN global)
-- Les modifications sensibles (tarifs, suppression) nécessitent rôle owner/admin et ownership vérifié.
+### `POST /api/vehicles`
+- **Accès** : Authentifié
+- **Corps** : `PostVehicleDTO`
+- **Réponse** : `GetVehicleDTO`
+- **Description** : Crée un véhicule et assigne automatiquement l'utilisateur courant comme propriétaire.
 
-## Mapping besoins fonctionnels -> endpoints (couverture)
-- S'inscrire : POST /auth/register ✅
-- Se connecter : POST /auth/login ✅
-- Se déconnecter : POST /auth/logout ✅
-- Valider inscription : POST /auth/verify ✅
-- Accepter/Refuser réservation : PATCH /bookings/{id}/accept, /reject ✅
-- Effectuer réservation : POST /bookings ✅
-- Trouver une borne autour de soi (carte) : GET /stations/nearby ✅
-- Ajouter/modifier lieu : POST /places, PUT /places/{id} ✅
-- Ajouter/modifier borne : POST /stations, PUT /stations/{id} ✅
-- Définir tarifs horaires : POST /stations/{id}/rates ✅
-- Obtenir reçu PDF : GET /bookings/{id}/receipt.pdf ✅
-- Voir réservations en cours : GET /bookings/current ✅
-- Voir réservations passées (filtrage) : GET /bookings/past ✅
-- Exporter réservations au format Excel : GET /bookings/export.xlsx ✅
-- Supprimer borne si non réservée : DELETE /stations/{id} (logique 409 si réservée) ✅
+### `GET /api/vehicles`
+- **Accès** : Authentifié
+- **Réponse** : `List<GetVehicleDTO>`
+- **Description** : Liste les véhicules appartenant à l'utilisateur courant.
+
+### `GET /api/vehicles/all`
+- **Accès** : ADMIN uniquement
+- **Réponse** : `List<GetVehicleDTO>`
+- **Description** : Liste tous les véhicules (vue administrateur).
+
+### `GET /api/vehicles/{id}`
+- **Accès** : ADMIN ou propriétaire du véhicule 
+- **Réponse** : `GetVehicleDTO`
+- **Description** : Récupère un véhicule par son ID.
+
+### `PUT /api/vehicles/{id}`
+- **Accès** : ADMIN ou propriétaire du véhicule
+- **Corps** : `PostVehicleDTO`
+- **Réponse** : `GetVehicleDTO`
+- **Description** : Met à jour un véhicule.
+
+### `DELETE /api/vehicles/{id}`
+- **Accès** : ADMIN ou propriétaire du véhicule
+- **Réponse** : `204 No Content`
+- **Description** : Supprime un véhicule.
 
 ---
 
-Notes / étapes suivantes conseillées
-- Implémenter des tests d'intégration pour : création de réservation (concurrence), suppression de borne, génération PDF et export Excel.
-- Documenter les schémas JSON précis (DTO) et ajouter OpenAPI/Swagger.
+## 5. Lieux (`/api/places`)
 
+### `POST /api/places`
+- **Accès** : Authentifié
+- **Corps** : `PostPlaceDTO`
+- **Réponse** : `GetPlaceDTO`
+- **Description** : Crée un lieu et assigne l'utilisateur courant comme propriétaire.
+
+### `GET /api/places`
+- **Accès** : Authentifié
+- **Réponse** : `List<GetPlaceDTO>`
+- **Description** : Liste les lieux appartenant à l'utilisateur courant.
+
+### `GET /api/places/all`
+- **Accès** : ADMIN uniquement
+- **Réponse** : `List<GetPlaceDTO>`
+- **Description** : Liste tous les lieux (vue administrateur).
+
+### `GET /api/places/{id}`
+- **Accès** : ADMIN ou propriétaire du lieu 
+- **Réponse** : `GetPlaceDTO`
+- **Description** : Récupère un lieu par son ID.
+
+### `PUT /api/places/{id}`
+- **Accès** : ADMIN ou propriétaire du lieu
+- **Corps** : `PostPlaceDTO`
+- **Réponse** : `GetPlaceDTO`
+- **Description** : Met à jour un lieu.
+
+### `DELETE /api/places/{id}`
+- **Accès** : ADMIN ou propriétaire du lieu
+- **Réponse** : `204 No Content`
+- **Description** : Supprime un lieu.
+
+---
+
+## 6. Stations de recharge (`/api/stations`)
+
+### `POST /api/stations`
+- **Accès** : ADMIN ou propriétaire du lieu associé
+- **Corps** : `PostChargingStationDTO`
+- **Réponse** : `GetChargingStationDTO`
+- **Description** : Crée une station de recharge sur un lieu existant.
+
+### `GET /api/stations/{id}`
+- **Accès** : Public
+- **Réponse** : `GetChargingStationDTO`
+- **Description** : Récupère une station de recharge par son ID.
+
+### `PUT /api/stations/{id}`
+- **Accès** : ADMIN ou propriétaire de la station
+- **Corps** : `UpdateChargingStationDTO`
+- **Réponse** : `GetChargingStationDTO`
+- **Description** : Met à jour une station de recharge.
+
+### `DELETE /api/stations/{id}`
+- **Accès** : ADMIN ou propriétaire de la station
+- **Réponse** : `204 No Content`
+- **Description** : Supprime une station de recharge.
+
+### `GET /api/stations/nearby`
+- **Accès** : Public
+- **Corps** : `QueryNearbyChargingStationDTO` (longitude, latitude, radiusInKm)
+- **Réponse** : `List<GetChargingStationDTO>`
+- **Description** : Recherche les stations de recharge proches d'une position géographique donnée.
+
+### `GET /api/stations/free?datetime={datetime}`
+- **Accès** : Public
+- **Paramètres** : `datetime` (LocalDateTime au format ISO)
+- **Réponse** : `List<GetChargingStationDTO>`
+- **Description** : Liste les stations de recharge libres à une date/heure donnée.
+
+### `GET /api/stations/nearby-and-free`
+- **Accès** : Public
+- **Corps** : `QueryNearbyFreeChargingStationDTO` (longitude, latitude, radiusInKm, datetime)
+- **Réponse** : `List<GetChargingStationDTO>`
+- **Description** : Recherche les stations proches ET libres à une date/heure donnée.
+
+---
+
+## 7. Réservations (`/api/bookings`)
+
+### `POST /api/bookings`
+- **Accès** : ADMIN ou propriétaire du véhicule associé
+- **Corps** : `PostBookingDTO`
+- **Réponse** : `GetBookingDTO`
+- **Description** : Crée une réservation de station pour un véhicule donné.
+
+### `GET /api/bookings`
+- **Accès** : ADMIN uniquement
+- **Réponse** : `List<GetBookingDTO>`
+- **Description** : Liste toutes les réservations.
+
+### `GET /api/bookings/as-vehicle-owner`
+- **Accès** : Authentifié
+- **Réponse** : `List<GetBookingDTO>`
+- **Description** : Liste les réservations où l'utilisateur courant est propriétaire du véhicule.
+
+### `GET /api/bookings/as-station-owner`
+- **Accès** : Authentifié
+- **Réponse** : `List<GetBookingDTO>`
+- **Description** : Liste les réservations où l'utilisateur courant est propriétaire de la station.
+
+### `GET /api/bookings/{id}`
+- **Accès** : ADMIN ou partie prenante de la réservation (propriétaire du véhicule ou de la station)
+- **Réponse** : `GetBookingDTO`
+- **Description** : Récupère une réservation par son ID (si l'utilisateur est impliqué).
+
+### `PATCH /api/bookings/{id}/accept`
+- **Accès** : ADMIN ou propriétaire de la station associée
+- **Réponse** : `GetBookingDTO`
+- **Description** : Accepte une réservation.
+
+### `PATCH /api/bookings/{id}/reject`
+- **Accès** : ADMIN ou propriétaire de la station associée
+- **Réponse** : `GetBookingDTO`
+- **Description** : Rejette une réservation.
+
+### `PATCH /api/bookings/{id}/cancel`
+- **Accès** : ADMIN ou propriétaire du véhicule associé
+- **Réponse** : `GetBookingDTO`
+- **Description** : Annule une réservation.
+
+### `PATCH /api/bookings/{id}/start`
+- **Accès** : ADMIN ou propriétaire du véhicule associé
+- **Réponse** : `GetBookingDTO`
+- **Description** : Démarre une session de recharge.
+
+### `PATCH /api/bookings/{id}/end`
+- **Accès** : ADMIN ou propriétaire du véhicule associé
+- **Réponse** : `GetBookingDTO`
+- **Description** : Termine une session de recharge.
+
+### `PATCH /api/bookings/{id}/review`
+- **Accès** : ADMIN ou propriétaire du véhicule associé
+- **Corps** : `PostReviewBookingDTO` (reviewGrade, reviewComment)
+- **Réponse** : `GetBookingDTO`
+- **Description** : Ajoute une évaluation (note et commentaire) à une réservation terminée.
+
+---
+
+## Notes importantes
+
+1. **Authentification** : L'API utilise JWT stocké dans un cookie HTTP-only nommé `access_token`. Ce cookie est automatiquement envoyé par le navigateur avec chaque requête.
+
+2. **Rôles** : Deux rôles existent : `USER` (par défaut) et `ADMIN` (pour les opérations d'administration).
+
+4. **CORS** : Configuré pour accepter les origines définies dans `application.properties` avec credentials (cookies).
+
+5. **Endpoints publics** : Seuls les endpoints de login/register et de recherche de stations sont accessibles sans authentification.
 

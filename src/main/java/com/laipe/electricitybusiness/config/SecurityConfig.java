@@ -47,7 +47,8 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll() // Autoriser l'accès à la console H2
                         .requestMatchers("/api/stations/free").permitAll()
                         .requestMatchers("/api/stations/nearby").permitAll()
-                        .requestMatchers("/api/stations/nearby-and-free").permitAll() // Autoriser les recherches publiques de stations
+                        .requestMatchers("/api/stations/nearby-and-free").permitAll()
+                        .requestMatchers("/api/stations/{id}").permitAll() // Autoriser les recherches publiques de stations
 
                         .anyRequest().authenticated() // Toutes les autres requêtes nécessitent une authentification
                 )

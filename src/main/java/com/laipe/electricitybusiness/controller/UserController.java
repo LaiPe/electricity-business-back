@@ -37,7 +37,7 @@ public class UserController {
     private final UpdateEmailMapper updateEmailMapper;
 
     @PostMapping
-
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GetUserDTO> create(@RequestBody @Valid PostUserDTO dto) {
         return ResponseEntity.ok(getUserMapper.toDto(userService.create(postUserMapper.toEntity(dto))));
     }
