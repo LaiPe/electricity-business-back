@@ -314,6 +314,16 @@ Cette documentation liste tous les endpoints exposés par l'API Electricity Busi
 - **Réponse** : `GetBookingDTO`
 - **Description** : Ajoute une évaluation (note et commentaire) à une réservation terminée.
 
+### `GET /api/bookings/{id}/export/pdf`
+- **Accès** : ADMIN ou partie prenante de la réservation (propriétaire du véhicule ou de la station)
+- **Réponse** : `byte[]` (fichier PDF)
+- **Description** : Génère et télécharge un PDF contenant les détails de la réservation.
+
+### `GET /api/bookings/export/xlsx`
+- **Accès** : Authentifié
+- **Réponse** : `byte[]` (fichier Excel)
+- **Description** : Génère et télécharge un fichier Excel (.xlsx) contenant toutes les réservations de l'utilisateur courant, organisées en deux sections distinctes : réservations de ses bornes de recharge et réservations de ses véhicules.
+
 ---
 
 ## Notes importantes
