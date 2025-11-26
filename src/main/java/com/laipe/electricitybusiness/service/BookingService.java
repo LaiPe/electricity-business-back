@@ -26,6 +26,7 @@ public class BookingService extends GenericJPAService<Booking, Long> {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final PdfService pdfService;
+    private final ExcelService excelService;
     private final PowerCalculatorUtil powerCalculatorUtil;
     private final DateUtil dateUtil;
 
@@ -33,6 +34,7 @@ public class BookingService extends GenericJPAService<Booking, Long> {
             BookingRepository bookingRepository,
             UserRepository userRepository,
             PdfService pdfService,
+            ExcelService excelService,
             PowerCalculatorUtil powerCalculatorUtil,
             DateUtil dateUtil
     ) {
@@ -40,6 +42,7 @@ public class BookingService extends GenericJPAService<Booking, Long> {
         this.bookingRepository = bookingRepository;
         this.userRepository = userRepository;
         this.pdfService = pdfService;
+        this.excelService = excelService;
         this.powerCalculatorUtil = powerCalculatorUtil;
         this.dateUtil = dateUtil;
     }
@@ -181,6 +184,18 @@ public class BookingService extends GenericJPAService<Booking, Long> {
             return pdfService.generateBookingPdf(booking, vehicleOwner, stationOwner);
         } catch (IOException e) {
             throw new RuntimeException("Error generating PDF for booking with id " + id, e);
+        }
+    }
+
+    public byte[] generateBookingsExcelForUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(userId, User.class));
+        List<Booking> bookingsAsVehiculeOwner = bookingRepository.findAllByVehicleOwnerId(userId);
+        List<Booking> bookingsAsStationOwner = bookingRepository.findAllByStationOwnerId(userId);
+        try {
+            return excelService.generateBookingsExcel(user, bookingsAsStationOwner, bookingsAsVehiculeOwner);
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating Excel for bookings of user with id " + userId, e);
         }
     }
 }

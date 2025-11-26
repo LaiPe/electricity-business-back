@@ -137,7 +137,7 @@ public class BookingController {
                 .orElseThrow(() -> new ResourceNotFoundException(id, Booking.class));
     }
 
-    @GetMapping("{id}/pdf")
+    @GetMapping("{id}/export/pdf")
     @PreAuthorize("hasRole('ADMIN') or @authorizeUtil.isPartOfBooking(#id)")
     public ResponseEntity<byte[]> getBookingPdf(@PathVariable Long id) {
         byte[] pdfBytes = bookingService.generateBookingPdfById(id);
@@ -145,5 +145,17 @@ public class BookingController {
                 .header("Content-Type", "application/pdf")
                 .header("Content-Disposition", "attachment; filename=\"booking_" + id + ".pdf\"")
                 .body(pdfBytes);
+    }
+
+    @GetMapping("/export/xlsx")
+    public ResponseEntity<byte[]> exportBookingsToExcel() {
+        // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
+        Long userId = securityUtil.getUserIdFromAuthentification();
+
+        byte[] excelBytes = bookingService.generateBookingsExcelForUser(userId);
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .header("Content-Disposition", "attachment; filename=\"bookings_user_" + userId + ".xlsx\"")
+                .body(excelBytes);
     }
 }
