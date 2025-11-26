@@ -137,4 +137,13 @@ public class BookingController {
                 .orElseThrow(() -> new ResourceNotFoundException(id, Booking.class));
     }
 
+    @GetMapping("{id}/pdf")
+    @PreAuthorize("hasRole('ADMIN') or @authorizeUtil.isPartOfBooking(#id)")
+    public ResponseEntity<byte[]> getBookingPdf(@PathVariable Long id) {
+        byte[] pdfBytes = bookingService.generateBookingPdfById(id);
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/pdf")
+                .header("Content-Disposition", "attachment; filename=\"booking_" + id + ".pdf\"")
+                .body(pdfBytes);
+    }
 }
