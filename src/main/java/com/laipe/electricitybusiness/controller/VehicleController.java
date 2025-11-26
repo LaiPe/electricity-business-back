@@ -6,6 +6,7 @@ import com.laipe.electricitybusiness.dto.vehicle.GetVehicleDTO;
 import com.laipe.electricitybusiness.dto.vehicle.GetVehicleMapper;
 import com.laipe.electricitybusiness.dto.vehicle.PostVehicleDTO;
 import com.laipe.electricitybusiness.dto.vehicle.PostVehicleMapper;
+import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.model.Vehicle;
 import com.laipe.electricitybusiness.model.VehicleModel;
 import com.laipe.electricitybusiness.service.VehicleModelService;
@@ -14,12 +15,14 @@ import com.laipe.electricitybusiness.utils.SecurityUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @AllArgsConstructor
 @RestController()
 @RequestMapping("/api/vehicles")
@@ -52,7 +55,11 @@ public class VehicleController {
 
         // Set the owner of the vehicle to the current user
         Vehicle vehicle = postVehicleMapper.toEntity(postVehicleDTO);
-        vehicle.getOwner().setId(userId);
+        User owner = new User();
+        owner.setId(userId);
+        vehicle.setOwner(owner);
+
+        log.warn("Creating vehicle {}", vehicle);
 
         Vehicle createdVehicle = vehicleService.create(vehicle);
         GetVehicleDTO dto = enrichVehicleWithModel(createdVehicle);
