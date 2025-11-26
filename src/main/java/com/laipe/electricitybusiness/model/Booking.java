@@ -30,11 +30,11 @@ public class Booking {
     private LocalDateTime actualEndDate;
 
     @Digits(integer = 4, fraction = 2)
-    @Column(name = "final_price", precision = 6, scale = 2, nullable = false)
+    @Column(name = "final_price", precision = 6, scale = 2)
     private BigDecimal finalPrice;
 
     @Digits(integer = 4, fraction = 2)
-    @Column(name = "final_consumption_kwh", precision = 6, scale = 2, nullable = false)
+    @Column(name = "final_consumption_kwh", precision = 6, scale = 2)
     private BigDecimal finalConsumptionKwh;
 
     @Enumerated(EnumType.STRING)
