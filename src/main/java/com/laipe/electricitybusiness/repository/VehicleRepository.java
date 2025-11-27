@@ -18,6 +18,6 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     @Query("SELECT v FROM Vehicle v WHERE v.deletedAt IS NULL")
     List<Vehicle> findAllNotDeleted();
 
-    @Query("SELECT v FROM Place v WHERE v.deletedAt IS NOT NULL")
+    @Query("SELECT v FROM Vehicle v WHERE v.deletedAt IS NOT NULL")
     List<Vehicle> findAllDeleted();
 }
