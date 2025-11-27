@@ -1,5 +1,6 @@
 package com.laipe.electricitybusiness.controller;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.laipe.electricitybusiness.controller.handler.InvalidVerificationCodeException;
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
 import com.laipe.electricitybusiness.dto.auth.*;
@@ -66,7 +67,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterDTO registerDTO, HttpServletResponse response) {
+    public ResponseEntity<AuthResponseWithVerificationCode> register(@Valid @RequestBody RegisterDTO registerDTO, HttpServletResponse response) {
         log.info("Tentative d'inscription pour l'utilisateur: {}", registerDTO.getUsername());
 
         // Convertir le DTO en entité User
@@ -88,11 +89,18 @@ public class AuthController {
         response.addCookie(cookieService.createAccessTokenCookie(accessToken));
 
         log.info("Utilisateur créé avec succès: {}", savedUser.getUsername());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse("User registered successfull : " + verificationCode, statusUserMapper.toDto(savedUser)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new AuthResponseWithVerificationCode(
+                        "User registered successfull",
+                        verificationCode,
+                        statusUserMapper.toDto(savedUser)
+                )
+        );
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<MessageResponse> verify(@Valid @RequestBody String code) {
+    public ResponseEntity<MessageResponse> verify(@Valid @RequestBody VerificationCodeRequest request) {
+        String code = request.getVerificationCode();
         log.info("Vérification du code pour l'utilisateur courant");
 
         // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
@@ -107,7 +115,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-verification-code")
-    public ResponseEntity<MessageResponse> refreshVerificationCode() {
+    public ResponseEntity<MessageResponseWithVerificationCode> refreshVerificationCode() {
         log.info("Rafraîchissement du code de vérification pour l'utilisateur courant");
 
         // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
@@ -127,7 +135,8 @@ public class AuthController {
                 .orElseThrow(() -> new ResourceNotFoundException(userId, User.class));
 
         log.info("Nouveau code de vérification généré pour l'utilisateur: {}", user.getUsername());
-        return ResponseEntity.ok(new MessageResponse("New verification code generated: " + newCode));
+        return ResponseEntity.ok(
+                new MessageResponseWithVerificationCode("New verification code generated", newCode));
     }
 
     @GetMapping("/status")
@@ -155,6 +164,15 @@ public class AuthController {
 
     @Data
     @AllArgsConstructor
+    public static class AuthResponseWithVerificationCode {
+        private String message;
+        @JsonProperty("verification_code")
+        private String verificationCode;
+        private StatusUserDTO user;
+    }
+
+    @Data
+    @AllArgsConstructor
     public static class AuthResponse {
         private String message;
         private StatusUserDTO user;
@@ -162,7 +180,22 @@ public class AuthController {
 
     @Data
     @AllArgsConstructor
+    public static class MessageResponseWithVerificationCode {
+        private String message;
+        @JsonProperty("verification_code")
+        private String verificationCode;
+    }
+
+    @Data
+    @AllArgsConstructor
     public static class MessageResponse {
         private String message;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class VerificationCodeRequest {
+        @JsonProperty("verification_code")
+        private String verificationCode;
     }
 }
