@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,7 +63,7 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
             throw new IllegalArgumentException("La latitude doit être comprise entre -90 et 90");
         }
 
-        return stationRepository.findAll().stream()
+        return stationRepository.findAllNotDeleted().stream()
                 .filter(borne -> geolocatorUtil.calculateDistance(latitude, longitude, borne.getLatitude(), borne.getLongitude()) <= radius.doubleValue())
                 .map(getChargingStationMapper::toDto)
                 .toList();
@@ -81,7 +82,7 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
             throw new IllegalArgumentException("Le temps ne peut pas être null");
         }
 
-        List<ChargingStation> allStations = stationRepository.findAll();
+        List<ChargingStation> allStations = stationRepository.findAllNotDeleted();
         List<Booking> activeBookings = bookingRepository.findAll().stream()
                 .filter(Booking::isActive)
                 .filter(r -> dateUtil.doOverlap(r.getStartDate(), r.getExpectedEndDate(), searchStart, searchEnd))
@@ -138,5 +139,20 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
                 .filter(freeBorne -> nearbyBornes.stream()
                         .anyMatch(nearbyBorne -> nearbyBorne.getId().equals(freeBorne.getId())))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ChargingStation create(ChargingStation entity) {
+        entity.setCreatedAt(LocalDateTime.now());
+        return super.create(entity);
+    }
+
+    @Override
+    public Optional<ChargingStation> deleteById(Long id) {
+        return stationRepository.findById(id)
+                .map(station -> {
+                    station.setDeletedAt(LocalDateTime.now());
+                    return stationRepository.save(station);
+                });
     }
 }

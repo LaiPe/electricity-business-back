@@ -6,6 +6,7 @@ import com.laipe.electricitybusiness.service.generic.GenericJPAService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -20,6 +21,17 @@ public class PlaceService extends GenericJPAService<Place, Long> {
     }
 
     public List<Place> getAllByOwnerId(Long ownerId) {
-        return placeRepository.findByOwnerId(ownerId);
+        return placeRepository.findAllNotDeletedByOwnerId(ownerId);
+    }
+
+    @Override
+    public Place create(Place entity) {
+        entity.setCreatedAt(LocalDateTime.now());
+        return super.create(entity);
+    }
+
+    @Override
+    public List<Place> getAll() {
+        return placeRepository.findAllNotDeleted();
     }
 }

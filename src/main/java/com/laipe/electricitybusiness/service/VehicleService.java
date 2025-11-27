@@ -9,6 +9,7 @@ import com.laipe.electricitybusiness.service.generic.GenericJPAService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ public class VehicleService extends GenericJPAService<Vehicle, Long> {
     public Vehicle create(Vehicle entity) {
         vehicleModelRepository.findById(entity.getModelId())
             .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", entity.getModelId(), VehicleModel.class));
+        entity.setCreatedAt(LocalDateTime.now());
         return super.create(entity);
     }
 
@@ -40,6 +42,11 @@ public class VehicleService extends GenericJPAService<Vehicle, Long> {
     }
 
     public List<Vehicle> getAllByOwnerId(Long ownerId) {
-        return vehicleRepository.findByOwnerId(ownerId);
+        return vehicleRepository.findAllNotDeletedByOwnerId(ownerId);
+    }
+
+    @Override
+    public List<Vehicle> getAll() {
+        return vehicleRepository.findAllNotDeleted();
     }
 }
