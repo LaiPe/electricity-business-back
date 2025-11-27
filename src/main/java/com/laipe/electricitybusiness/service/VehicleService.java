@@ -1,6 +1,7 @@
 package com.laipe.electricitybusiness.service;
 
 import com.laipe.electricitybusiness.controller.handler.IntegrityConstraintViolationException;
+import com.laipe.electricitybusiness.model.Place;
 import com.laipe.electricitybusiness.model.Vehicle;
 import com.laipe.electricitybusiness.model.VehicleModel;
 import com.laipe.electricitybusiness.repository.VehicleModelRepository;
@@ -9,6 +10,7 @@ import com.laipe.electricitybusiness.service.generic.GenericJPAService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +31,7 @@ public class VehicleService extends GenericJPAService<Vehicle, Long> {
     public Vehicle create(Vehicle entity) {
         vehicleModelRepository.findById(entity.getModelId())
             .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", entity.getModelId(), VehicleModel.class));
+        entity.setCreatedAt(LocalDateTime.now());
         return super.create(entity);
     }
 
@@ -40,6 +43,20 @@ public class VehicleService extends GenericJPAService<Vehicle, Long> {
     }
 
     public List<Vehicle> getAllByOwnerId(Long ownerId) {
-        return vehicleRepository.findByOwnerId(ownerId);
+        return vehicleRepository.findAllNotDeletedByOwnerId(ownerId);
+    }
+
+    @Override
+    public List<Vehicle> getAll() {
+        return vehicleRepository.findAllNotDeleted();
+    }
+
+    @Override
+    public Optional<Vehicle> deleteById(Long id) {
+        return vehicleRepository.findById(id)
+                .map(station -> {
+                    station.setDeletedAt(LocalDateTime.now());
+                    return vehicleRepository.save(station);
+                });
     }
 }
