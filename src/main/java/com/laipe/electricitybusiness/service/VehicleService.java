@@ -21,7 +21,7 @@ public class VehicleService extends GenericJPAService<Vehicle, Long> {
     private final VehicleRepository vehicleRepository;
     private final VehicleModelRepository vehicleModelRepository;
 
-    protected VehicleService(VehicleRepository vehicleRepository,  VehicleModelRepository vehicleModelRepository) {
+    public VehicleService(VehicleRepository vehicleRepository,  VehicleModelRepository vehicleModelRepository) {
         super(vehicleRepository);
         this.vehicleRepository = vehicleRepository;
         this.vehicleModelRepository = vehicleModelRepository;
