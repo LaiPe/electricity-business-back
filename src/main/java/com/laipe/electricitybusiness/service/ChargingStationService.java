@@ -148,6 +148,11 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
     }
 
     @Override
+    public List<ChargingStation> getAll() {
+        return stationRepository.findAllNotDeleted();
+    }
+
+    @Override
     public Optional<ChargingStation> deleteById(Long id) {
         return stationRepository.findById(id)
                 .map(station -> {
