@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -46,15 +47,31 @@ public class AuthController {
         log.info("Tentative de connexion pour l'utilisateur: {}", loginDTO.getUsername());
 
         // Authentifier l'utilisateur
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginDTO.getUsername(),
-                        loginDTO.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginDTO.getUsername(),
+                            loginDTO.getPassword()
+                    )
+            );
+        } catch (AuthenticationException ex) {
+            // Log minimal info and return a generic unauthorized response so that an attacker
+            // cannot distinguish between bad credentials and other authentication failures.
+            log.warn("Échec d'authentification pour l'utilisateur: {}", loginDTO.getUsername());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse("Invalid username or password", null));
+        }
 
         // Récupérer l'utilisateur
         User user = (User) userService.loadUserByUsername(loginDTO.getUsername());
+
+        // Si l'utilisateur est soft deleted, renvoyer la même erreur que pour de mauvais identifiants
+        if (user.getDeletedAt() != null) {
+            log.warn("Tentative de connexion avec un utilisateur supprimé: {}", loginDTO.getUsername());
+            // Retourner une réponse 401 générique (indiscernable d'un mauvais credential)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse("Invalid username or password", null));
+        }
 
         // Générer l'access token avec l'id utilisateur dans le payload
         String accessToken = jwtService.generateToken(user.getId());

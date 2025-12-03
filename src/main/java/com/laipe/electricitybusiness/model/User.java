@@ -71,6 +71,10 @@ public class User implements UserDetails {
     @Column(name = "verified", nullable = false)
     private Boolean verified;
 
+    @PastOrPresent
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @NotNull
     @Column(name = "verification_code", nullable = false)
     private String verificationCode;

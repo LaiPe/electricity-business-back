@@ -3,7 +3,9 @@ package com.laipe.electricitybusiness.service;
 import com.laipe.electricitybusiness.controller.handler.AlreadyUsedUsernameException;
 import com.laipe.electricitybusiness.controller.handler.AlreadyVerifiedUserException;
 import com.laipe.electricitybusiness.model.User;
+import com.laipe.electricitybusiness.repository.PlaceRepository;
 import com.laipe.electricitybusiness.repository.UserRepository;
+import com.laipe.electricitybusiness.repository.VehicleRepository;
 import com.laipe.electricitybusiness.service.generic.GenericJPAService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -24,12 +27,31 @@ public class UserService extends GenericJPAService<User, Long> implements UserDe
     private final BCryptPasswordEncoder passwordEncoder;
     private final VerificationCodeService verificationCodeService;
 
+    private final PlaceService placeService;
+    private final PlaceRepository placeRepository;
+    private final VehicleService vehicleService;
+    private final VehicleRepository vehicleRepository;
 
-    public UserService(UserRepository repository, BCryptPasswordEncoder passwordEncoder, VerificationCodeService verificationCodeService) {
+
+    public UserService(
+            UserRepository repository,
+            BCryptPasswordEncoder passwordEncoder,
+            VerificationCodeService verificationCodeService,
+            PlaceService placeService,
+            PlaceRepository placeRepository,
+            VehicleService vehicleService,
+            VehicleRepository vehicleRepository
+
+    ) {
         super(repository);
         this.userRepository = repository;
         this.passwordEncoder = passwordEncoder;
         this.verificationCodeService = verificationCodeService;
+
+        this.placeService = placeService;
+        this.placeRepository = placeRepository;
+        this.vehicleService = vehicleService;
+        this.vehicleRepository = vehicleRepository;
     }
 
     @Override
@@ -69,6 +91,38 @@ public class UserService extends GenericJPAService<User, Long> implements UserDe
             newEntity.setPassword(passwordEncoder.encode(newEntity.getPassword()));
         }
         return super.update(newEntity, id);
+    }
+
+    @Override
+    public Optional<User> deleteById(Long id) {
+        // First, delete all associated vehicles (can be refused)
+        placeRepository.findAllNotDeletedByOwnerId(id)
+                .forEach(place -> {
+                    placeService.deleteById(place.getId());
+                });
+
+        // Then, delete all associated places (can be refused)
+        vehicleRepository.findAllNotDeletedByOwnerId(id)
+                .forEach(vehicle -> {
+                    vehicleService.deleteById(vehicle.getId());
+                });
+
+        // Finally, anonymize the user & soft delete
+        return userRepository.findById(id)
+                .map(user -> {
+                    // Anonymization
+                    user.setUsername("deleted_user_" + user.getId());
+                    user.setEmail("deleted_user_" + user.getId() + "@deleted.com");
+                    user.setFirstName("Deleted");
+                    user.setLastName("User");
+                    user.setBirthDate(LocalDate.MIN);
+
+                    // Soft delete
+                    user.setDeletedAt(LocalDateTime.now());
+
+                    // Return updated user
+                    return userRepository.save(user);
+                });
     }
 
     public Optional<User> verifyUser(Long userId, String code) throws AlreadyVerifiedUserException {
