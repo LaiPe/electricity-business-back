@@ -55,9 +55,9 @@ public class PlaceService extends GenericJPAService<Place, Long> {
                 });
 
         return placeRepository.findById(id)
-                .map(station -> {
-                    station.setDeletedAt(LocalDateTime.now());
-                    return placeRepository.save(station);
+                .map(place -> {
+                    place.setDeletedAt(LocalDateTime.now());
+                    return placeRepository.save(place);
                 });
     }
 }
