@@ -95,13 +95,13 @@ public class UserService extends GenericJPAService<User, Long> implements UserDe
 
     @Override
     public Optional<User> deleteById(Long id) {
-        // First, delete all associated vehicles (can be refused)
+        // First, soft delete all associated vehicles (can be refused)
         placeRepository.findAllNotDeletedByOwnerId(id)
                 .forEach(place -> {
                     placeService.deleteById(place.getId());
                 });
 
-        // Then, delete all associated places (can be refused)
+        // Then, soft delete all associated places (can be refused)
         vehicleRepository.findAllNotDeletedByOwnerId(id)
                 .forEach(vehicle -> {
                     vehicleService.deleteById(vehicle.getId());
