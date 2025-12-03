@@ -1,5 +1,6 @@
 package com.laipe.electricitybusiness.service;
 
+import com.laipe.electricitybusiness.controller.handler.InvalidBookingState;
 import com.laipe.electricitybusiness.dto.chargingstations.GetChargingStationDTO;
 import com.laipe.electricitybusiness.dto.chargingstations.GetChargingStationMapper;
 import com.laipe.electricitybusiness.model.Booking;
@@ -154,6 +155,14 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
 
     @Override
     public Optional<ChargingStation> deleteById(Long id) {
+        bookingRepository.findAllByStationId(id)
+                .forEach(booking -> {
+                    // Si une réservation est présente ou future, on ne peut pas supprimer la borne
+                    if (booking.isActive() || booking.getStartDate().isAfter(LocalDateTime.now())) {
+                        throw new InvalidBookingState("Cannot delete station with active or future bookings.");
+                    }
+                });
+
         return stationRepository.findById(id)
                 .map(station -> {
                     station.setDeletedAt(LocalDateTime.now());

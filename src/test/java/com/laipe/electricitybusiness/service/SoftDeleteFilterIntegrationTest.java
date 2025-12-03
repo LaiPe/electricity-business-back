@@ -60,9 +60,10 @@ public class SoftDeleteFilterIntegrationTest {
         var mapper = mock(GetChargingStationMapper.class);
 
         // construct services using real JPA repositories and mocked dependencies
-        this.placeService = new PlaceService(placeRepository);
-        this.vehicleService = new VehicleService(vehicleRepository, mock(VehicleModelRepository.class));
+        // ChargingStationService is required by PlaceService, construct it first
         this.chargingStationService = new ChargingStationService(chargingStationRepository, bookingRepo, geo, dateUtil, mapper);
+        this.placeService = new PlaceService(placeRepository, chargingStationRepository, chargingStationService);
+        this.vehicleService = new VehicleService(vehicleRepository, mock(VehicleModelRepository.class), bookingRepo);
     }
 
     private User buildUser() {

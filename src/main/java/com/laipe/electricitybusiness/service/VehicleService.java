@@ -1,9 +1,9 @@
 package com.laipe.electricitybusiness.service;
 
 import com.laipe.electricitybusiness.controller.handler.IntegrityConstraintViolationException;
-import com.laipe.electricitybusiness.model.Place;
-import com.laipe.electricitybusiness.model.Vehicle;
-import com.laipe.electricitybusiness.model.VehicleModel;
+import com.laipe.electricitybusiness.controller.handler.InvalidBookingState;
+import com.laipe.electricitybusiness.model.*;
+import com.laipe.electricitybusiness.repository.BookingRepository;
 import com.laipe.electricitybusiness.repository.VehicleModelRepository;
 import com.laipe.electricitybusiness.repository.VehicleRepository;
 import com.laipe.electricitybusiness.service.generic.GenericJPAService;
@@ -20,11 +20,13 @@ public class VehicleService extends GenericJPAService<Vehicle, Long> {
 
     private final VehicleRepository vehicleRepository;
     private final VehicleModelRepository vehicleModelRepository;
+    private final BookingRepository bookingRepository;
 
-    public VehicleService(VehicleRepository vehicleRepository,  VehicleModelRepository vehicleModelRepository) {
+    public VehicleService(VehicleRepository vehicleRepository,  VehicleModelRepository vehicleModelRepository, BookingRepository bookingRepository) {
         super(vehicleRepository);
         this.vehicleRepository = vehicleRepository;
         this.vehicleModelRepository = vehicleModelRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
@@ -53,6 +55,20 @@ public class VehicleService extends GenericJPAService<Vehicle, Long> {
 
     @Override
     public Optional<Vehicle> deleteById(Long id) {
+        // First, handle bookings associated with the vehicle
+        List<Booking> bookings = bookingRepository.findAllByVehiculeId(id);
+        bookings.forEach(booking -> {
+            // If there's an ongoing booking, we cannot delete the vehicle
+            if (booking.getState() == BookingState.ONGOING) {
+                throw new InvalidBookingState("Cannot delete vehicle with ongoing bookings.");
+            }
+            // For pending or accepted bookings, we cancel them
+            else if (booking.getState() == BookingState.PENDING_ACCEPT || booking.getState() == BookingState.ACCEPTED) {
+                booking.setState(BookingState.CANCELLED);
+            }
+        });
+        bookingRepository.saveAll(bookings);
+
         return vehicleRepository.findById(id)
                 .map(station -> {
                     station.setDeletedAt(LocalDateTime.now());
