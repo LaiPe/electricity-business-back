@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
@@ -43,6 +44,9 @@ public class ServiceDeletionRulesIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    // UserService is constructed manually in setup() (not available in @DataJpaTest), so don't autowire it
+    private UserService userService;
+
     private ChargingStationService chargingStationService;
     private PlaceService placeService;
     private VehicleService vehicleService;
@@ -54,10 +58,16 @@ public class ServiceDeletionRulesIntegrationTest {
         var dateUtil = mock(DateUtil.class);
         var mapper = mock(GetChargingStationMapper.class);
 
-        // Construire les services en réutilisant les repositories réels
+        // construct services with real repos and mocked util dependencies
         this.chargingStationService = new ChargingStationService(chargingStationRepository, bookingRepository, geo, dateUtil, mapper);
         this.placeService = new PlaceService(placeRepository, chargingStationRepository, chargingStationService);
         this.vehicleService = new VehicleService(vehicleRepository, mock(VehicleModelRepository.class), bookingRepository);
+
+        // For UserService we need passwordEncoder and verificationCodeService; use simple mocks/real encoder
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        var verificationCodeService = mock(com.laipe.electricitybusiness.service.VerificationCodeService.class);
+
+        this.userService = new UserService(userRepository, encoder, verificationCodeService, placeService, placeRepository, vehicleService, vehicleRepository);
     }
 
     private User buildUser() {
@@ -207,5 +217,76 @@ public class ServiceDeletionRulesIntegrationTest {
         List<Booking> bOngoing = bookingRepository.findAllByVehiculeId(vehicle2.getId());
         assertThat(bOngoing).isNotEmpty();
         assertThat(bOngoing).extracting(Booking::getState).contains(BookingState.ONGOING);
+    }
+
+    @Test
+    void deleteUser_success_softDeletes_properties_and_anonymizes_user() {
+        // create user with one place and one vehicle, no blocking bookings
+        User user = userRepository.save(buildUser());
+
+        Place place = new Place();
+        place.setName("MyPlace");
+        place.setOwner(user);
+        place.setCreatedAt(LocalDateTime.now());
+        place = placeRepository.save(place);
+
+        Vehicle vehicle = vehicleRepository.save(buildVehicle(user));
+
+        // No bookings created -> vehicleService.deleteById should succeed
+
+        var result = userService.deleteById(user.getId());
+        assertThat(result).isPresent();
+        User deleted = result.get();
+
+        // user is anonymized
+        assertThat(deleted.getUsername()).startsWith("deleted_user_");
+        assertThat(deleted.getEmail()).contains("@deleted.com");
+        assertThat(deleted.getFirstName()).isEqualTo("Deleted");
+        assertThat(deleted.getLastName()).isEqualTo("User");
+        assertThat(deleted.getBirthDate()).isEqualTo(LocalDate.MIN);
+        assertThat(deleted.getDeletedAt()).isNotNull();
+
+        // properties should be soft-deleted (if deletion succeeded)
+        var v = vehicleRepository.findById(vehicle.getId());
+        assertThat(v).isPresent();
+        assertThat(v.get().getDeletedAt()).isNotNull();
+
+        var p = placeRepository.findById(place.getId());
+        assertThat(p).isPresent();
+        assertThat(p.get().getDeletedAt()).isNotNull();
+    }
+
+    @Test
+    void deleteUser_refused_if_vehicleDeletion_refused_and_user_not_anonymized() {
+        // create user with vehicle that has ONGOING booking -> vehicle deletion refused
+        User user = userRepository.save(buildUser());
+
+        Place place = new Place();
+        place.setName("MyPlace2");
+        place.setOwner(user);
+        place.setCreatedAt(LocalDateTime.now());
+        place = placeRepository.save(place);
+
+        Vehicle vehicle = vehicleRepository.save(buildVehicle(user));
+
+        ChargingStation station = chargingStationRepository.save(buildStation(place));
+
+        // create ONGOING booking which should block vehicle deletion
+        bookingRepository.save(buildBooking(
+                vehicle,
+                station,
+                BookingState.ONGOING,
+                LocalDateTime.now().minusHours(1),
+                LocalDateTime.now().plusHours(1)
+        ));
+
+        // deletion should throw and user should remain unchanged
+        assertThatThrownBy(() -> userService.deleteById(user.getId()))
+                .isInstanceOf(RuntimeException.class);
+
+        var existingUser = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(existingUser.getDeletedAt()).isNull();
+        assertThat(existingUser.getUsername()).isEqualTo(user.getUsername());
+        assertThat(existingUser.getEmail()).isEqualTo(user.getEmail());
     }
 }
