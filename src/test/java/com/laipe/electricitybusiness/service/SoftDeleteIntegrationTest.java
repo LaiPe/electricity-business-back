@@ -32,7 +32,7 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
-public class SoftDeleteFilterIntegrationTest {
+public class SoftDeleteIntegrationTest {
 
     @Autowired
     private PlaceRepository placeRepository;
