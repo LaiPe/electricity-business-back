@@ -4,6 +4,7 @@ import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundExceptio
 import com.laipe.electricitybusiness.dto.chargingstations.*;
 import com.laipe.electricitybusiness.model.ChargingStation;
 import com.laipe.electricitybusiness.service.ChargingStationService;
+import com.laipe.electricitybusiness.web.QueryDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +69,7 @@ public class ChargingStationController {
     }
 
     @GetMapping("/nearby")
-    public ResponseEntity<List<GetChargingStationDTO>> getNearbyStations(@RequestBody @Valid QueryNearbyChargingStationDTO dto) {
+    public ResponseEntity<List<GetChargingStationDTO>> getNearbyStations(@QueryDto @Valid QueryNearbyChargingStationDTO dto) {
         return ResponseEntity.ok(chargingStationService.getNearbyStations(
                 dto.getLongitude(),
                 dto.getLatitude(),
@@ -77,12 +78,12 @@ public class ChargingStationController {
     }
 
     @GetMapping("/free")
-    public ResponseEntity<List<GetChargingStationDTO>> getFreeStations( @RequestBody @Valid QueryFreeChargingStationDTO dto) {
+    public ResponseEntity<List<GetChargingStationDTO>> getFreeStations(@QueryDto @Valid QueryFreeChargingStationDTO dto) {
         return ResponseEntity.ok(chargingStationService.getFreeStations(dto.getSearchStart(), dto.getSearchEnd()));
     }
 
     @GetMapping("/nearby-and-free")
-    public ResponseEntity<List<GetChargingStationDTO>> getNearbyStations(@RequestBody @Valid QueryNearbyFreeChargingStationDTO dto) {
+    public ResponseEntity<List<GetChargingStationDTO>> getNearbyStations(@QueryDto @Valid QueryNearbyFreeChargingStationDTO dto) {
         return ResponseEntity.ok(chargingStationService.getFreeNearbyStations(
                 dto.getLongitude(),
                 dto.getLatitude(),
