@@ -8,10 +8,20 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface PlaceRepository extends JpaRepository<Place,Long> {
-    @Query("SELECT p FROM Place p WHERE p.owner.id = :ownerId AND p.deletedAt IS NULL")
+    @Query(
+            "SELECT DISTINCT p FROM Place p " +
+            "LEFT JOIN FETCH p.chargingStations cs " +
+            "WHERE p.owner.id = :ownerId " +
+                    "AND p.deletedAt IS NULL " +
+                    "AND (cs IS NULL OR cs.deletedAt IS NULL)")
     List<Place> findAllNotDeletedByOwnerId(@Param("ownerId") Long ownerId);
 
-    @Query("SELECT p FROM Place p WHERE p.owner.id = :ownerId AND p.deletedAt IS NOT NULL")
+    @Query(
+            "SELECT DISTINCT p FROM Place p " +
+                    "LEFT JOIN FETCH p.chargingStations cs " +
+                    "WHERE p.owner.id = :ownerId " +
+                    "AND p.deletedAt IS NOT NULL " +
+                    "AND (cs IS NULL OR cs.deletedAt IS NOT NULL)")
     List<Place> findAllDeletedByOwnerId(@Param("ownerId") Long ownerId);
 
     @Query("SELECT p FROM Place p WHERE p.deletedAt IS NULL")
