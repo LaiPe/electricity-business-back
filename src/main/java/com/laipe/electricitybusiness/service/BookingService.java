@@ -6,7 +6,9 @@ import com.laipe.electricitybusiness.model.Booking;
 import com.laipe.electricitybusiness.model.BookingState;
 import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.repository.BookingRepository;
+import com.laipe.electricitybusiness.repository.ChargingStationRepository;
 import com.laipe.electricitybusiness.repository.UserRepository;
+import com.laipe.electricitybusiness.repository.VehicleRepository;
 import com.laipe.electricitybusiness.service.generic.GenericJPAService;
 import com.laipe.electricitybusiness.utils.DateUtil;
 import com.laipe.electricitybusiness.utils.ModelUtil;
@@ -29,6 +31,8 @@ public class BookingService extends GenericJPAService<Booking, Long> {
     private final ExcelService excelService;
     private final PowerCalculatorUtil powerCalculatorUtil;
     private final DateUtil dateUtil;
+    private final VehicleRepository vehicleRepository;
+    private final ChargingStationRepository chargingStationRepository;
 
     public BookingService(
             BookingRepository bookingRepository,
@@ -36,8 +40,8 @@ public class BookingService extends GenericJPAService<Booking, Long> {
             PdfService pdfService,
             ExcelService excelService,
             PowerCalculatorUtil powerCalculatorUtil,
-            DateUtil dateUtil
-    ) {
+            DateUtil dateUtil,
+            VehicleRepository vehicleRepository, ChargingStationRepository chargingStationRepository) {
         super(bookingRepository);
         this.bookingRepository = bookingRepository;
         this.userRepository = userRepository;
@@ -45,10 +49,27 @@ public class BookingService extends GenericJPAService<Booking, Long> {
         this.excelService = excelService;
         this.powerCalculatorUtil = powerCalculatorUtil;
         this.dateUtil = dateUtil;
+        this.vehicleRepository = vehicleRepository;
+        this.chargingStationRepository = chargingStationRepository;
     }
 
     @Override
     public Booking create(Booking entity) {
+        // Check if vehicle is deleted
+        vehicleRepository.findById(entity.getVehicle().getId())
+                .filter(e -> e.getDeletedAt() != null) // Filter undeleted vehicle
+                .ifPresent(e -> {
+                    throw new IllegalArgumentException("Cannot create a booking for a deleted vehicle.");
+                });
+
+        // Check if charging station is deleted
+        chargingStationRepository.findById(entity.getVehicle().getId())
+                    .filter(e -> e.getDeletedAt() != null)
+                    .ifPresent(e -> {
+                        throw new IllegalArgumentException("Cannot create a booking for a deleted charging station.");
+                    });
+
+        // Check for overlapping bookings
         bookingRepository.findAllByStationId(entity.getStation().getId())
                 .forEach(existingBooking -> {
                     if (dateUtil.doOverlap(
@@ -60,8 +81,28 @@ public class BookingService extends GenericJPAService<Booking, Long> {
                         throw new InvalidBookingState("The station is already booked for the selected time interval.");
                     }
                 });
+
         entity.setState(BookingState.PENDING_ACCEPT);
         return super.create(entity);
+    }
+
+    @Override
+    public Optional<Booking> update(Booking entity, Long id) {
+        // Check if vehicle is deleted
+        vehicleRepository.findById(entity.getVehicle().getId())
+                .filter(e -> e.getDeletedAt() != null) // Filter undeleted vehicle
+                .ifPresent(e -> {
+                    throw new IllegalArgumentException("Cannot update a booking for a deleted vehicle.");
+                });
+
+        // Check if charging station is deleted
+        chargingStationRepository.findById(entity.getVehicle().getId())
+                    .filter(e -> e.getDeletedAt() != null)
+                    .ifPresent(e -> {
+                        throw new IllegalArgumentException("Cannot update a booking for a deleted charging station.");
+                    });
+
+        return super.update(entity, id);
     }
 
     public List<Booking> getAllByVehicleOwnerId(Long ownerId) {

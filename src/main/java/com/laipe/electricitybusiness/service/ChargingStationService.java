@@ -7,6 +7,7 @@ import com.laipe.electricitybusiness.model.Booking;
 import com.laipe.electricitybusiness.model.ChargingStation;
 import com.laipe.electricitybusiness.repository.BookingRepository;
 import com.laipe.electricitybusiness.repository.ChargingStationRepository;
+import com.laipe.electricitybusiness.repository.PlaceRepository;
 import com.laipe.electricitybusiness.service.generic.GenericJPAService;
 import com.laipe.electricitybusiness.utils.DateUtil;
 import com.laipe.electricitybusiness.utils.GeolocatorUtil;
@@ -30,20 +31,23 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
     private final DateUtil dateUtil;
 
     private final GetChargingStationMapper getChargingStationMapper;
+    private final PlaceRepository placeRepository;
 
     public ChargingStationService(
             ChargingStationRepository stationRepository,
             BookingRepository bookingRepository,
+            PlaceRepository placeRepository,
             GeolocatorUtil geolocatorUtil,
             DateUtil dateUtil,
             GetChargingStationMapper getChargingStationMapper
-    ) {
+            ) {
         super(stationRepository);
         this.stationRepository = stationRepository;
         this.bookingRepository = bookingRepository;
         this.geolocatorUtil = geolocatorUtil;
         this.dateUtil = dateUtil;
         this.getChargingStationMapper = getChargingStationMapper;
+        this.placeRepository = placeRepository;
     }
 
     /**
@@ -144,8 +148,27 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
 
     @Override
     public ChargingStation create(ChargingStation entity) {
+        // Verify that the place is not deleted
+        placeRepository.findById(entity.getPlace().getId())
+                .filter(place -> place.getDeletedAt() != null) // Filter undeleted place
+                .ifPresent(place -> {
+                    throw new IllegalArgumentException("Cannot move station to a deleted place.");
+                });
+
         entity.setCreatedAt(LocalDateTime.now());
         return super.create(entity);
+    }
+
+    @Override
+    public Optional<ChargingStation> update(ChargingStation entity, Long id) {
+        // Verify that the place is not deleted
+        placeRepository.findById(entity.getPlace().getId())
+                .filter(place -> place.getDeletedAt() != null) // Filter undeleted place
+                .ifPresent(place -> {
+                    throw new IllegalArgumentException("Cannot move station to a deleted place.");
+                });
+
+        return super.update(entity, id);
     }
 
     @Override

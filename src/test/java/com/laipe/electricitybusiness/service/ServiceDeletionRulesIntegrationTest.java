@@ -59,9 +59,9 @@ public class ServiceDeletionRulesIntegrationTest {
         var mapper = mock(GetChargingStationMapper.class);
 
         // construct services with real repos and mocked util dependencies
-        this.chargingStationService = new ChargingStationService(chargingStationRepository, bookingRepository, geo, dateUtil, mapper);
-        this.placeService = new PlaceService(placeRepository, chargingStationRepository, chargingStationService);
-        this.vehicleService = new VehicleService(vehicleRepository, mock(VehicleModelRepository.class), bookingRepository);
+        this.chargingStationService = new ChargingStationService(chargingStationRepository, bookingRepository, placeRepository, geo, dateUtil, mapper);
+        this.placeService = new PlaceService(placeRepository, chargingStationRepository, chargingStationService, userRepository);
+        this.vehicleService = new VehicleService(vehicleRepository, mock(VehicleModelRepository.class), bookingRepository, userRepository);
 
         // For UserService we need passwordEncoder and verificationCodeService; use simple mocks/real encoder
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
