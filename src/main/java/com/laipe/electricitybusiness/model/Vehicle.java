@@ -22,7 +22,7 @@ public class Vehicle {
 
     @NotBlank
     @Size(min = 2, max = 15)
-    @Column(name = "registration_number", length = 15, nullable = false, unique = true)
+    @Column(name = "registration_number", length = 15, nullable = false)
     private String registrationNumber;
 
     @PastOrPresent
