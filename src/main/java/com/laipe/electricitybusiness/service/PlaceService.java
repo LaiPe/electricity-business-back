@@ -1,6 +1,7 @@
 package com.laipe.electricitybusiness.service;
 
 import com.laipe.electricitybusiness.model.Place;
+import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.repository.ChargingStationRepository;
 import com.laipe.electricitybusiness.repository.PlaceRepository;
 import com.laipe.electricitybusiness.repository.UserRepository;
@@ -57,27 +58,65 @@ public class PlaceService extends GenericJPAService<Place, Long> {
 
     @Override
     public Optional<Place> update(Place entity, Long id) {
-        userRepository.findById(entity.getOwner().getId())
+        // Verify that the place is not soft-deleted, and if it's not, get user id from existing place
+        Long userId = placeRepository.findById(id)
+                .filter(place -> place.getDeletedAt() == null) // Filter deleted place
+                .map(Place::getOwner)
+                .map(User::getId)
+                .orElseThrow(() -> new IllegalArgumentException("Cannot update a deleted place."));
+
+        // Verify that the user is not deleted
+        userRepository.findById(userId)
                 .filter(e -> e.getDeletedAt() != null) // Filter undeleted user
                 .ifPresent(e -> {
                     throw new IllegalArgumentException("Cannot update a place for a deleted user.");
                 });
 
-        return super.update(entity, id);
+        // Proceed with the update
+        super.update(entity, id);
+
+        // As a place is supposed to be fetched with its charging stations (eager),
+        // by using the generic update method return value, we will be using findById repository method,
+        // that would include deleted charging stations as well,
+        // so we need to filter them out here
+        return placeRepository.findById(id)
+                .map(this::filterDeletedStations);
     }
 
     @Override
     public Optional<Place> deleteById(Long id) {
+        // Verify that the place isn't already soft-deleted
+        placeRepository.findById(id)
+                .filter(e -> e.getDeletedAt() != null) // Filter undeleted place
+                .ifPresent(e -> {
+                    throw new IllegalArgumentException("Place is already deleted.");
+                });
+
         // First, soft delete all associated charging stations
         chargingStationRepository.findAllByPlaceIdAndDeletedAtIsNull(id)
                 .forEach(station -> {
                     chargingStationService.deleteById(station.getId());
                 });
 
+        // Then, soft delete the place itself
         return placeRepository.findById(id)
                 .map(place -> {
                     place.setDeletedAt(LocalDateTime.now());
                     return placeRepository.save(place);
                 });
+    }
+
+    /**
+     * Filters out soft-deleted charging stations from a Place.
+     * Uses removeIf to modify the existing collection instead of replacing it,
+     * which would cause issues with Hibernate's orphanRemoval.
+     * @param place the place to filter
+     * @return the place with only non-deleted charging stations
+     */
+    private Place filterDeletedStations(Place place) {
+        if (place.getChargingStations() != null) {
+            place.getChargingStations().removeIf(cs -> cs.getDeletedAt() != null);
+        }
+        return place;
     }
 }

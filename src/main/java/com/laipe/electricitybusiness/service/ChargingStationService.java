@@ -5,6 +5,7 @@ import com.laipe.electricitybusiness.dto.chargingstations.GetChargingStationDTO;
 import com.laipe.electricitybusiness.dto.chargingstations.GetChargingStationMapper;
 import com.laipe.electricitybusiness.model.Booking;
 import com.laipe.electricitybusiness.model.ChargingStation;
+import com.laipe.electricitybusiness.model.Place;
 import com.laipe.electricitybusiness.repository.BookingRepository;
 import com.laipe.electricitybusiness.repository.ChargingStationRepository;
 import com.laipe.electricitybusiness.repository.PlaceRepository;
@@ -161,8 +162,16 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
 
     @Override
     public Optional<ChargingStation> update(ChargingStation entity, Long id) {
+        // Verify that the station is not soft-deleted, and if it's not, get place id from existing station
+        Long placeId = stationRepository.findById(id)
+                .filter(station -> station.getDeletedAt() == null) // Filter deleted station
+                .map(ChargingStation::getPlace)
+                .map(Place::getId)
+                .orElseThrow(() -> new IllegalArgumentException("Cannot update a deleted station."));
+
+
         // Verify that the place is not deleted
-        placeRepository.findById(entity.getPlace().getId())
+        placeRepository.findById(placeId)
                 .filter(place -> place.getDeletedAt() != null) // Filter undeleted place
                 .ifPresent(place -> {
                     throw new IllegalArgumentException("Cannot move station to a deleted place.");
@@ -178,14 +187,23 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
 
     @Override
     public Optional<ChargingStation> deleteById(Long id) {
+        // Verify that the station isn't already soft-deleted
+        stationRepository.findById(id)
+                .filter(e -> e.getDeletedAt() != null) // Filter undeleted station
+                .ifPresent(e -> {
+                    throw new IllegalArgumentException("Station is already deleted.");
+                });
+
+        // Verify that there is no active or future booking for this station
         bookingRepository.findAllByStationId(id)
                 .forEach(booking -> {
-                    // Si une réservation est présente ou future, on ne peut pas supprimer la borne
+                    // If there is an active or future booking, throw an exception
                     if (booking.isActive() || booking.getStartDate().isAfter(LocalDateTime.now())) {
                         throw new InvalidBookingState("Cannot delete station with active or future bookings.");
                     }
                 });
 
+        // Then, soft delete the station
         return stationRepository.findById(id)
                 .map(station -> {
                     station.setDeletedAt(LocalDateTime.now());

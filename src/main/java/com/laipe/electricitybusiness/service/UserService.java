@@ -66,26 +66,43 @@ public class UserService extends GenericJPAService<User, Long> implements UserDe
 
     @Override
     public User create(User entity) {
+        // Verify if username is already used
         if (userRepository.findByUsername(entity.getUsername()).isPresent()) {
             throw new AlreadyUsedUsernameException(entity.getUsername());
         }
+
+        // Then, set creation date and other default values
         entity.setBanned(false);
         entity.setVerified(false);
         entity.setSigninDate(LocalDateTime.now());
+
+        // Hash password
         entity.setPassword(passwordEncoder.encode(entity.getPassword()));
 
-        entity.setVerificationCode(passwordEncoder.encode(entity.getVerificationCode())); // Hashage du code de vérification
-        entity.setCodeExpirationDate(LocalDateTime.now().plusMinutes(verificationCodeService.getCODE_EXPIRATION_MINUTES()));
+        // Hash verification code and set expiration date
+        entity.setVerificationCode(passwordEncoder.encode(entity.getVerificationCode())); // Hash verification code
+        entity.setCodeExpirationDate(LocalDateTime.now().plusMinutes(verificationCodeService.getCODE_EXPIRATION_MINUTES())); // Set expiration date
         return super.create(entity);
     }
 
     @Override
     public Optional<User> update(User newEntity, Long id) {
+        // Verify that the user is not soft-deleted
+        userRepository.findById(id)
+                .filter(e -> e.getDeletedAt() != null) // Filter undeleted user
+                .ifPresent(e -> {
+                    throw new IllegalArgumentException("Cannot update a deleted user.");
+                });
+
+        // Check if username is changing and if the new one is already used
         if (newEntity.getUsername() != null && userRepository.findByUsername(newEntity.getUsername()).isPresent()) {
             throw new AlreadyUsedUsernameException(newEntity.getUsername());
         }
+
+        // Hash password and verification code if they are being updated
         if (newEntity.getVerificationCode() != null) {
-            newEntity.setVerificationCode(passwordEncoder.encode(newEntity.getVerificationCode())); // Hashage du code de vérification
+            newEntity.setVerificationCode(passwordEncoder.encode(newEntity.getVerificationCode())); // Hash verification code
+            newEntity.setCodeExpirationDate(LocalDateTime.now().plusMinutes(verificationCodeService.getCODE_EXPIRATION_MINUTES())); // Update expiration date
         }
         if (newEntity.getPassword() != null) {
             newEntity.setPassword(passwordEncoder.encode(newEntity.getPassword()));
@@ -95,6 +112,13 @@ public class UserService extends GenericJPAService<User, Long> implements UserDe
 
     @Override
     public Optional<User> deleteById(Long id) {
+        // Verify that the user isn't already soft-deleted
+        userRepository.findById(id)
+                .filter(e -> e.getDeletedAt() != null) // Filter undeleted user
+                .ifPresent(e -> {
+                    throw new IllegalArgumentException("User is already deleted.");
+                });
+
         // First, soft delete all associated vehicles (can be refused)
         placeRepository.findAllNotDeletedByOwnerId(id)
                 .forEach(place -> {

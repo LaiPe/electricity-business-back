@@ -88,6 +88,12 @@ public class BookingService extends GenericJPAService<Booking, Long> {
 
     @Override
     public Optional<Booking> update(Booking entity, Long id) {
+        // A booking cannot be soft-deleted, so we just get vehicle and station from existing booking
+        Booking existingBooking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(id, Booking.class));
+        entity.setVehicle(existingBooking.getVehicle());
+        entity.setStation(existingBooking.getStation());
+
         // Check if vehicle is deleted
         vehicleRepository.findById(entity.getVehicle().getId())
                 .filter(e -> e.getDeletedAt() != null) // Filter undeleted vehicle
