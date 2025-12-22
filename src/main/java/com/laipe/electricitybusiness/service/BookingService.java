@@ -63,7 +63,7 @@ public class BookingService extends GenericJPAService<Booking, Long> {
                 });
 
         // Check if charging station is deleted
-        chargingStationRepository.findById(entity.getVehicle().getId())
+        chargingStationRepository.findById(entity.getStation().getId())
                     .filter(e -> e.getDeletedAt() != null)
                     .ifPresent(e -> {
                         throw new IllegalArgumentException("Cannot create a booking for a deleted charging station.");
