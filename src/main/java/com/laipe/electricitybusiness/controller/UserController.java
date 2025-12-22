@@ -34,6 +34,7 @@ public class UserController {
     private final UpdateUsernameMapper updateUsernameMapper;
     private final UpdatePasswordMapper updatePasswordMapper;
     private final UpdateEmailMapper updateEmailMapper;
+    private final PublicUserMapper publicUserMapper;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -102,6 +103,13 @@ public class UserController {
                 .map(getUserMapper::toDto)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"))
         );
+    }
+    @GetMapping("/{id}/public")
+    public ResponseEntity<PublicUserDTO> getPublicUserById(@PathVariable @Min(1) Long id) {
+        return userService.getById(id)
+                .map(publicUserMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResourceNotFoundException(id, User.class));
     }
 
     @PutMapping("/me")

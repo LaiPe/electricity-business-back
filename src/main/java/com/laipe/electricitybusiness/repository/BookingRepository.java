@@ -8,10 +8,17 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking,Long> {
-    @Query("SELECT b FROM Booking b WHERE b.vehicle.owner.id = :ownerId")
+    @Query("SELECT b FROM Booking b " +
+            "JOIN FETCH b.station s " +
+            "JOIN FETCH s.place p " +
+            "JOIN FETCH p.owner o " +
+            "WHERE b.vehicle.owner.id = :ownerId")
     List<Booking> findAllByVehicleOwnerId(@Param("ownerId") Long ownerId);
 
-    @Query("SELECT b FROM Booking b WHERE b.station.place.owner.id = :ownerId")
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.vehicle v " +
+           "JOIN FETCH v.owner u " +
+           "WHERE b.station.place.owner.id = :ownerId")
     List<Booking> findAllByStationOwnerId(@Param("ownerId") Long ownerId);
 
     @Query("SELECT b FROM Booking b WHERE b.station.id = :stationId")

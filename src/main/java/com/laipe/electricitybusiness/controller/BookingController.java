@@ -2,7 +2,9 @@ package com.laipe.electricitybusiness.controller;
 
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
 import com.laipe.electricitybusiness.dto.booking.*;
+import com.laipe.electricitybusiness.dto.vehicle.GetVehicleDTO;
 import com.laipe.electricitybusiness.model.Booking;
+import com.laipe.electricitybusiness.model.VehicleModel;
 import com.laipe.electricitybusiness.service.BookingService;
 import com.laipe.electricitybusiness.utils.SecurityUtil;
 import jakarta.validation.Valid;
@@ -24,6 +26,9 @@ public class BookingController {
 
     private final PostBookingMapper postBookingMapper;
     private final GetBookingMapper getBookingMapper;
+    private final GetBookingAsStationOwnerMapper getBookingAsStationOwnerMapper;
+    private final GetBookingAsVehicleOwnerMapper getBookingAsVehicleOwnerMapper;
+    private final VehicleController vehiculeController;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or @authorizeUtil.isOwnerOfVehicle(#dto.vehicleId)")
@@ -48,25 +53,29 @@ public class BookingController {
     }
 
     @GetMapping("/as-vehicle-owner")
-    public ResponseEntity<List<GetBookingDTO>> getBookingsAsVehicleOwner() {
+    public ResponseEntity<List<GetBookingAsVehicleOwnerDTO>> getBookingsAsVehicleOwner() {
         // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
         Long userId = securityUtil.getUserIdFromAuthentification();
 
-        List<GetBookingDTO> bookings = bookingService.getAllByVehicleOwnerId(userId)
+        List<GetBookingAsVehicleOwnerDTO> bookings = bookingService.getAllByVehicleOwnerId(userId)
                 .stream()
-                .map(getBookingMapper::toDto)
+                .map(getBookingAsVehicleOwnerMapper::toDto)
                 .toList();
         return ResponseEntity.ok(bookings);
     }
 
     @GetMapping("/as-station-owner")
-    public ResponseEntity<List<GetBookingDTO>> getBookingsAsStationOwner() {
+    public ResponseEntity<List<GetBookingAsStationOwnerDTO>> getBookingsAsStationOwner() {
         // Récupérer l'id de l'utilisateur courant depuis le contexte de sécurité
         Long userId = securityUtil.getUserIdFromAuthentification();
 
-        List<GetBookingDTO> bookings = bookingService.getAllByStationOwnerId(userId)
+        List<GetBookingAsStationOwnerDTO> bookings = bookingService.getAllByStationOwnerId(userId)
                 .stream()
-                .map(getBookingMapper::toDto)
+                .map(getBookingAsStationOwnerMapper::toDto)
+                .peek(booking -> {
+                    VehicleModel model = vehiculeController.enrichVehicleWithModelId(booking.getVehicle().getVehicleModel().getId());
+                    booking.getVehicle().setVehicleModel(model);
+                })
                 .toList();
         return ResponseEntity.ok(bookings);
     }

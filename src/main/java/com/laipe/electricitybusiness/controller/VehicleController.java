@@ -39,13 +39,15 @@ public class VehicleController {
         GetVehicleDTO vehicleDTO = getVehicleMapper.toDto(vehicle);
 
         String modelId = vehicleDTO.getVehicleModel().getId();
-        VehicleModel model = vehicleModelService.getById(modelId)
-                .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", modelId, VehicleModel.class));
-
-        vehicleDTO.setVehicleModel(model);
+        VehicleModel vehicleModel = enrichVehicleWithModelId(modelId);
+        vehicleDTO.setVehicleModel(vehicleModel);
         return vehicleDTO;
     }
 
+    protected VehicleModel enrichVehicleWithModelId(String modelId) {
+        return vehicleModelService.getById(modelId)
+                .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", modelId, VehicleModel.class));
+    }
 
 
     @PostMapping
