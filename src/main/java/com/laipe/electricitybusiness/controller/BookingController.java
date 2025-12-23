@@ -2,7 +2,6 @@ package com.laipe.electricitybusiness.controller;
 
 import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundException;
 import com.laipe.electricitybusiness.dto.booking.*;
-import com.laipe.electricitybusiness.dto.vehicle.GetVehicleDTO;
 import com.laipe.electricitybusiness.model.Booking;
 import com.laipe.electricitybusiness.model.VehicleModel;
 import com.laipe.electricitybusiness.service.BookingService;
@@ -32,7 +31,7 @@ public class BookingController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or @authorizeUtil.isOwnerOfVehicle(#dto.vehicleId)")
-    public ResponseEntity<GetBookingDTO> postBooking(@RequestBody PostBookingDTO dto) {
+    public ResponseEntity<GetBookingDTO> postBooking(@RequestBody @Valid PostBookingDTO dto) {
         return ResponseEntity.ok(
                 getBookingMapper.toDto(
                         bookingService.create(
