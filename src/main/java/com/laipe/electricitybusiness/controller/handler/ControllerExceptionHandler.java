@@ -82,7 +82,7 @@ public class ControllerExceptionHandler {
     }
 
     @ExceptionHandler(InvalidBookingState.class)
-    public ResponseEntity<ErrorResponse> handleInvalidBookingStateChange(InvalidVerificationCodeException ex) {
+    public ResponseEntity<ErrorResponse> handleInvalidBookingStateChange(InvalidBookingState ex) {
         log.warn("Caught InvalidBookingStateChange");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(ex.getMessage()));
