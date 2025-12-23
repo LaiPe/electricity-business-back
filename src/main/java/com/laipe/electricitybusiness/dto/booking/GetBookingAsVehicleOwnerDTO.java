@@ -2,6 +2,7 @@ package com.laipe.electricitybusiness.dto.booking;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.laipe.electricitybusiness.dto.chargingstations.GetChargingStationWithUserDetails;
+import com.laipe.electricitybusiness.dto.vehicle.GetVehicleDTO;
 import com.laipe.electricitybusiness.model.BookingState;
 import lombok.Data;
 
@@ -39,4 +40,7 @@ public class GetBookingAsVehicleOwnerDTO {
 
     @JsonProperty("station")
     private GetChargingStationWithUserDetails station;
+
+    @JsonProperty("vehicle")
+    private GetVehicleDTO vehicle;
 }

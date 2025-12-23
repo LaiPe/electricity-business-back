@@ -60,6 +60,10 @@ public class BookingController {
         List<GetBookingAsVehicleOwnerDTO> bookings = bookingService.getAllByVehicleOwnerId(userId)
                 .stream()
                 .map(getBookingAsVehicleOwnerMapper::toDto)
+                .peek(booking -> {
+                    VehicleModel model = vehiculeController.enrichVehicleWithModelId(booking.getVehicle().getVehicleModel().getId());
+                    booking.getVehicle().setVehicleModel(model);
+                })
                 .toList();
         return ResponseEntity.ok(bookings);
     }

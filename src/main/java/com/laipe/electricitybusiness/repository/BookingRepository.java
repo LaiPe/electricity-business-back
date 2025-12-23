@@ -12,12 +12,15 @@ public interface BookingRepository extends JpaRepository<Booking,Long> {
             "JOIN FETCH b.station s " +
             "JOIN FETCH s.place p " +
             "JOIN FETCH p.owner o " +
+            "JOIN FETCH b.vehicle v " +
             "WHERE b.vehicle.owner.id = :ownerId")
     List<Booking> findAllByVehicleOwnerId(@Param("ownerId") Long ownerId);
 
     @Query("SELECT b FROM Booking b " +
            "JOIN FETCH b.vehicle v " +
            "JOIN FETCH v.owner u " +
+            "JOIN FETCH b.station s " +
+            "JOIN FETCH s.place p " +
            "WHERE b.station.place.owner.id = :ownerId")
     List<Booking> findAllByStationOwnerId(@Param("ownerId") Long ownerId);
 

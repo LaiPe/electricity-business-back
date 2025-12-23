@@ -39,5 +39,28 @@ public class GetBookingAsStationOwnerDTO {
 
     @JsonProperty("vehicle")
     private GetVehiculeWithPublicUserDTO vehicle;
-}
 
+    @JsonProperty("station")
+    private ChargingStationInfo station;
+
+    @Data
+    public static class ChargingStationInfo {
+        @JsonProperty("id")
+        private Long id;
+
+        @JsonProperty("name")
+        private String name;
+
+        @JsonProperty("place")
+        private PlaceInfo place;
+    }
+
+    @Data
+    public static class PlaceInfo {
+        @JsonProperty("id")
+        private Long id;
+
+        @JsonProperty("name")
+        private String name;
+    }
+}
