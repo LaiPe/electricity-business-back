@@ -111,7 +111,7 @@ public class BookingController {
     }
 
     @PatchMapping("/{id}/cancel")
-    @PreAuthorize("hasRole('ADMIN') or @authorizeUtil.isVehicleOwnerOfBooking(#id)")
+    @PreAuthorize("hasRole('ADMIN') or @authorizeUtil.isPartOfBooking(#id)")
     public ResponseEntity<GetBookingDTO> cancelBooking(@PathVariable Long id) {
         return bookingService.cancelBooking(id)
                 .map(getBookingMapper::toDto)
