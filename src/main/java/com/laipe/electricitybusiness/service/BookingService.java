@@ -220,6 +220,9 @@ public class BookingService extends GenericJPAService<Booking, Long> {
     public byte[] generateBookingPdfById(Long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(id, Booking.class));
+        if (booking.getState() != BookingState.ACCEPTED && booking.getState() != BookingState.ONGOING && booking.getState() != BookingState.COMPLETED) {
+            throw new InvalidBookingState("Cannot generate PDF for this booking because it is not accepted yet or anymore");
+        }
 
         User vehicleOwner = userRepository.findVehicleOwnerBookingById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(id, Booking.class));

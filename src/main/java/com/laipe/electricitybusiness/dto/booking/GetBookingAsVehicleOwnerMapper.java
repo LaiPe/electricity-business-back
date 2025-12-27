@@ -9,5 +9,6 @@ import org.mapstruct.Mapping;
 public interface GetBookingAsVehicleOwnerMapper extends GenericDTOMapper<Booking, GetBookingAsVehicleOwnerDTO> {
     @Override
     @Mapping(target="station.owner", source = "station.place.owner")
+    @Mapping(target = "vehicle.vehicleModel.id", source = "vehicle.modelId")
     GetBookingAsVehicleOwnerDTO toDto(Booking entity);
 }
