@@ -155,7 +155,7 @@ public class BookingService extends GenericJPAService<Booking, Long> {
 
         return bookingRepository.findById(id)
                 .map(existingBooking -> {
-                    if (existingBooking.getState() == BookingState.ACCEPTED) {
+                    if (existingBooking.getState() == BookingState.ACCEPTED || existingBooking.getState() == BookingState.PENDING_ACCEPT) {
                         ModelUtil.copyFields(updatedBooking, existingBooking);
                         return bookingRepository.save(existingBooking);
                     } else {
