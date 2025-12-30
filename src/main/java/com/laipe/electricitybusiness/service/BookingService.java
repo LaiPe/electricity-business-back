@@ -123,7 +123,8 @@ public class BookingService extends GenericJPAService<Booking, Long> {
         Booking updatedBooking = new Booking();
         updatedBooking.setState(BookingState.ACCEPTED);
 
-        return bookingRepository.findById(id)
+        // Before accepting, check state
+        Optional<Booking> savedBooking = bookingRepository.findById(id)
                 .map(existingBooking -> {
                     if (existingBooking.getState() == BookingState.PENDING_ACCEPT) {
                         ModelUtil.copyFields(updatedBooking, existingBooking);
@@ -132,6 +133,25 @@ public class BookingService extends GenericJPAService<Booking, Long> {
                         throw new InvalidBookingState("Booking with id " + id + " is not in PENDING_ACCEPT state.");
                     }
                 });
+
+        // After accepting, check for overlapping bookings and reject them
+        Booking acceptedBooking = savedBooking.orElseThrow(() -> new ResourceNotFoundException(id, Booking.class));
+        bookingRepository.findAllByStationId(acceptedBooking.getStation().getId())
+                .forEach(existingBooking -> {
+                    if (dateUtil.doOverlap(
+                            existingBooking.getStartDate(),
+                            existingBooking.getExpectedEndDate(),
+                            acceptedBooking.getStartDate(),
+                            acceptedBooking.getExpectedEndDate()
+                    ) && existingBooking.getState() == BookingState.PENDING_ACCEPT) {
+                        Booking toReject = new Booking();
+                        toReject.setState(BookingState.REJECTED);
+                        ModelUtil.copyFields(toReject, existingBooking);
+                        bookingRepository.save(existingBooking);
+                    }
+                });
+
+        return savedBooking;
     }
 
     public Optional<Booking> rejectBooking(Long id) {
