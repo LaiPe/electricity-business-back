@@ -83,7 +83,7 @@ public class ChargingStationController {
     }
 
     @GetMapping("/nearby-and-free")
-    public ResponseEntity<List<GetChargingStationDTO>> getNearbyStations(@QueryDto @Valid QueryNearbyFreeChargingStationDTO dto) {
+    public ResponseEntity<List<GetChargingStationDTO>> getFreeNearbyStations(@QueryDto @Valid QueryNearbyFreeChargingStationDTO dto) {
         return ResponseEntity.ok(chargingStationService.getFreeNearbyStations(
                 dto.getLongitude(),
                 dto.getLatitude(),
