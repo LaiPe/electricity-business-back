@@ -77,7 +77,7 @@ public class BookingService extends GenericJPAService<Booking, Long> {
                             existingBooking.getExpectedEndDate(),
                             entity.getStartDate(),
                             entity.getExpectedEndDate()
-                    )) {
+                    ) && existingBooking.isActive()) {
                         throw new InvalidBookingState("The station is already booked for the selected time interval.");
                     }
                 });
