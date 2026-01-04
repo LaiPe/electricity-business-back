@@ -7,6 +7,9 @@
 ![MySQL](https://img.shields.io/badge/MySQL-8.3-blue?logo=mysql)
 ![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green?logo=mongodb)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)
+![JWT](https://img.shields.io/badge/JWT-0.12-purple?logo=jsonwebtokens)
+![iText](https://img.shields.io/badge/iText-8.0-red?logo=adobe)
+![Apache POI](https://img.shields.io/badge/Apache%20POI-5.2-orange?logo=apache)
 
 ## 📋 Vue d'ensemble
 
@@ -27,10 +30,13 @@ Electricity Business est une API REST moderne développée avec Spring Boot qui 
 
 ### Backend
 - **Java 21** avec Eclipse Temurin
-- **Spring Boot 3.5.3** (Web, Security, Data JPA, Data MongoDB)
+- **Spring Boot 3.5.3** (Web, Security, Data JPA, Data MongoDB, Data REST, Validation, Actuator)
 - **Spring Security** avec authentification JWT
-- **MapStruct** pour le mapping DTO/Entity
+- **JJWT 0.12** pour la gestion des tokens JWT
+- **MapStruct 1.5** pour le mapping DTO/Entity
 - **Lombok** pour la réduction du boilerplate
+- **iText 8** pour la génération de documents PDF
+- **Apache POI 5.2** pour la génération de fichiers Excel
 
 ### Bases de données
 - **MySQL 8.3** : Données relationnelles (utilisateurs, véhicules, réservations)
