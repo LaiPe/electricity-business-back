@@ -13,6 +13,9 @@ import com.laipe.electricitybusiness.service.VerificationCodeService;
 import com.laipe.electricitybusiness.utils.SecurityUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -213,6 +216,9 @@ public class AuthController {
     @AllArgsConstructor
     public static class VerificationCodeRequest {
         @JsonProperty("verification_code")
+        @NotNull
+        @Max(6)
+        @Min(6)
         private String verificationCode;
     }
 }
