@@ -46,7 +46,11 @@ public class VehicleController {
 
     protected VehicleModel enrichVehicleWithModelId(String modelId) {
         return vehicleModelService.getById(modelId)
-                .orElseThrow(() -> new IntegrityConstraintViolationException("vehicleModelId", modelId, VehicleModel.class));
+                .orElseThrow(() -> new IntegrityConstraintViolationException(
+                        "vehicleModelId",
+                        modelId,
+                        VehicleModel.class
+                ));
     }
 
 
