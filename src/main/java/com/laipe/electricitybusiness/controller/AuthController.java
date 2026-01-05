@@ -7,6 +7,7 @@ import com.laipe.electricitybusiness.dto.auth.*;
 import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.model.UserRole;
 import com.laipe.electricitybusiness.service.*;
+import com.laipe.electricitybusiness.service.MailService;
 import com.laipe.electricitybusiness.utils.SecurityUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
