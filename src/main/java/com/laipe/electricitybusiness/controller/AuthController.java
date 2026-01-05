@@ -6,16 +6,14 @@ import com.laipe.electricitybusiness.controller.handler.ResourceNotFoundExceptio
 import com.laipe.electricitybusiness.dto.auth.*;
 import com.laipe.electricitybusiness.model.User;
 import com.laipe.electricitybusiness.model.UserRole;
-import com.laipe.electricitybusiness.service.CookieService;
-import com.laipe.electricitybusiness.service.JwtService;
-import com.laipe.electricitybusiness.service.UserService;
-import com.laipe.electricitybusiness.service.VerificationCodeService;
+import com.laipe.electricitybusiness.service.*;
 import com.laipe.electricitybusiness.utils.SecurityUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +42,7 @@ public class AuthController {
     private final StatusUserMapper statusUserMapper;
     private final SecurityUtil securityUtil;
     private final CookieService cookieService;
+    private final MailService mailService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) {
@@ -100,7 +99,12 @@ public class AuthController {
 
         // Créer le nouvel utilisateur
         User savedUser = userService.create(fromDto);
-        // TODO: Envoyer le code par email
+
+        // Envoyer le code de vérification par email
+        mailService.sendVerificationCodeEmail(
+                savedUser,
+                verificationCode
+        );
 
         // Générer l'access token avec l'id utilisateur dans le payload
         String accessToken = jwtService.generateToken(savedUser.getId());
@@ -112,7 +116,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new AuthResponseWithVerificationCode(
                         "User registered successfull",
-                        verificationCode,
+                        verificationCode, //TODO: Remove code from response in production
                         statusUserMapper.toDto(savedUser)
                 )
         );
@@ -217,8 +221,7 @@ public class AuthController {
     public static class VerificationCodeRequest {
         @JsonProperty("verification_code")
         @NotNull
-        @Max(6)
-        @Min(6)
+        @Size(min = 6, max = 6)
         private String verificationCode;
     }
 }
