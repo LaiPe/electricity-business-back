@@ -70,7 +70,13 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
         }
 
         return stationRepository.findAllNotDeleted().stream()
-                .filter(borne -> geolocatorUtil.calculateDistance(latitude, longitude, borne.getLatitude(), borne.getLongitude()) <= radius.doubleValue())
+                .filter(borne -> geolocatorUtil.calculateDistance(
+                        latitude,
+                        longitude,
+                        borne.getLatitude(),
+                        borne.getLongitude())
+                        <= radius.doubleValue()
+                )
                 .map(getChargingStationMapper::toDto)
                 .toList();
     }

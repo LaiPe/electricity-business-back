@@ -11,8 +11,6 @@ import com.laipe.electricitybusiness.service.MailService;
 import com.laipe.electricitybusiness.utils.SecurityUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
