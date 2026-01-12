@@ -9,6 +9,13 @@ import java.util.List;
 
 public interface ChargingStationRepository extends JpaRepository<ChargingStation,Long> {
 
+    @Query("SELECT DISTINCT cs FROM ChargingStation cs " +
+           "LEFT JOIN FETCH cs.bookings b " +
+           "LEFT JOIN FETCH b.vehicle v " +
+           "LEFT JOIN FETCH v.owner " +
+           "WHERE cs.deletedAt IS NULL")
+    List<ChargingStation> findAllNotDeletedWithBookings();
+
     @Query("SELECT cs FROM ChargingStation cs WHERE cs.deletedAt IS NULL")
     List<ChargingStation> findAllNotDeleted();
 

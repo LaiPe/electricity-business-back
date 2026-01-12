@@ -23,6 +23,7 @@ public class ChargingStationController {
     private final ChargingStationService chargingStationService;
 
     private final GetChargingStationMapper getChargingStationMapper;
+    private final GetChargingStationWithReviewsMapper getChargingStationWithReviewsMapper;
     private final PostChargingStationMapper postChargingStationMapper;
     private final UpdateChargingStationMapper updateChargingStationMapper;
 
@@ -52,9 +53,9 @@ public class ChargingStationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GetChargingStationDTO> getById(@PathVariable("id") Long id) {
+    public ResponseEntity<GetChargingStationWithReviewsDTO> getById(@PathVariable("id") Long id) {
         return chargingStationService.getById(id)
-                .map(getChargingStationMapper::toDto)
+                .map(getChargingStationWithReviewsMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ResourceNotFoundException(id, ChargingStation.class));
     }
@@ -69,28 +70,30 @@ public class ChargingStationController {
     }
 
     @GetMapping("/nearby")
-    public ResponseEntity<List<GetChargingStationDTO>> getNearbyStations(@QueryDto @Valid QueryNearbyChargingStationDTO dto) {
+    public ResponseEntity<List<GetChargingStationWithReviewsDTO>> getNearbyStations(@QueryDto @Valid QueryNearbyChargingStationDTO dto) {
         return ResponseEntity.ok(chargingStationService.getNearbyStations(
                 dto.getLongitude(),
                 dto.getLatitude(),
                 dto.getRadiusInKm()
-        ));
+        ).stream().map(getChargingStationWithReviewsMapper::toDto).toList());
     }
 
     @GetMapping("/free")
-    public ResponseEntity<List<GetChargingStationDTO>> getFreeStations(@QueryDto @Valid QueryFreeChargingStationDTO dto) {
-        return ResponseEntity.ok(chargingStationService.getFreeStations(dto.getSearchStart(), dto.getSearchEnd()));
+    public ResponseEntity<List<GetChargingStationWithReviewsDTO>> getFreeStations(@QueryDto @Valid QueryFreeChargingStationDTO dto) {
+        return ResponseEntity.ok(chargingStationService.getFreeStations(
+                dto.getSearchStart(),
+                dto.getSearchEnd()
+        ).stream().map(getChargingStationWithReviewsMapper::toDto).toList());
     }
 
     @GetMapping("/nearby-and-free")
-    public ResponseEntity<List<GetChargingStationDTO>> getFreeNearbyStations(@QueryDto @Valid QueryNearbyFreeChargingStationDTO dto) {
+    public ResponseEntity<List<GetChargingStationWithReviewsDTO>> getFreeNearbyStations(@QueryDto @Valid QueryNearbyFreeChargingStationDTO dto) {
         return ResponseEntity.ok(chargingStationService.getFreeNearbyStations(
                 dto.getLongitude(),
                 dto.getLatitude(),
                 dto.getRadiusInKm(),
                 dto.getSearchStart(),
                 dto.getSearchEnd()
-        ));
+        ).stream().map(getChargingStationWithReviewsMapper::toDto).toList());
     }
-
 }

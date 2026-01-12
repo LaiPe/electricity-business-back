@@ -60,11 +60,10 @@ public class SoftDeleteIntegrationTest {
         var bookingRepo = mock(BookingRepository.class);
         var geo = mock(GeolocatorUtil.class);
         var dateUtil = mock(DateUtil.class);
-        var mapper = mock(GetChargingStationMapper.class);
 
         // construct services using real JPA repositories and mocked dependencies
         // ChargingStationService is required by PlaceService, construct it first
-        this.chargingStationService = new ChargingStationService(chargingStationRepository, bookingRepo, placeRepository, geo, dateUtil, mapper);
+        this.chargingStationService = new ChargingStationService(chargingStationRepository, bookingRepo, placeRepository, geo, dateUtil);
         this.placeService = new PlaceService(placeRepository, chargingStationRepository, chargingStationService, userRepository);
         this.vehicleService = new VehicleService(vehicleRepository, mock(VehicleModelRepository.class), bookingRepo, userRepository);
     }

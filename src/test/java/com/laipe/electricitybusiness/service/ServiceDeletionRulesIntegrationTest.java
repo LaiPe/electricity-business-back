@@ -56,10 +56,9 @@ public class ServiceDeletionRulesIntegrationTest {
         // mocks pour dépendances non-JPA
         var geo = mock(GeolocatorUtil.class);
         var dateUtil = mock(DateUtil.class);
-        var mapper = mock(GetChargingStationMapper.class);
 
         // construct services with real repos and mocked util dependencies
-        this.chargingStationService = new ChargingStationService(chargingStationRepository, bookingRepository, placeRepository, geo, dateUtil, mapper);
+        this.chargingStationService = new ChargingStationService(chargingStationRepository, bookingRepository, placeRepository, geo, dateUtil);
         this.placeService = new PlaceService(placeRepository, chargingStationRepository, chargingStationService, userRepository);
         this.vehicleService = new VehicleService(vehicleRepository, mock(VehicleModelRepository.class), bookingRepository, userRepository);
 

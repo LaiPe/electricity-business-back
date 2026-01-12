@@ -1,8 +1,6 @@
 package com.laipe.electricitybusiness.service;
 
 import com.laipe.electricitybusiness.controller.handler.InvalidBookingState;
-import com.laipe.electricitybusiness.dto.chargingstations.GetChargingStationDTO;
-import com.laipe.electricitybusiness.dto.chargingstations.GetChargingStationMapper;
 import com.laipe.electricitybusiness.model.Booking;
 import com.laipe.electricitybusiness.model.ChargingStation;
 import com.laipe.electricitybusiness.model.Place;
@@ -19,7 +17,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -31,7 +28,6 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
     private final GeolocatorUtil geolocatorUtil;
     private final DateUtil dateUtil;
 
-    private final GetChargingStationMapper getChargingStationMapper;
     private final PlaceRepository placeRepository;
 
     public ChargingStationService(
@@ -39,15 +35,13 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
             BookingRepository bookingRepository,
             PlaceRepository placeRepository,
             GeolocatorUtil geolocatorUtil,
-            DateUtil dateUtil,
-            GetChargingStationMapper getChargingStationMapper
+            DateUtil dateUtil
             ) {
         super(stationRepository);
         this.stationRepository = stationRepository;
         this.bookingRepository = bookingRepository;
         this.geolocatorUtil = geolocatorUtil;
         this.dateUtil = dateUtil;
-        this.getChargingStationMapper = getChargingStationMapper;
         this.placeRepository = placeRepository;
     }
 
@@ -58,7 +52,7 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
      * @param radius Rayon de recherche en kilomètres
      * @return Liste des bornes trouvées dans le rayon spécifié
      */
-    public List<GetChargingStationDTO> getNearbyStations(BigDecimal longitude, BigDecimal latitude, Integer radius) {
+    public List<ChargingStation> getNearbyStations(BigDecimal longitude, BigDecimal latitude, Integer radius) {
         if (longitude == null || latitude == null) {
             throw new IllegalArgumentException("Les coordonnées ne peuvent pas être null");
         }
@@ -69,7 +63,7 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
             throw new IllegalArgumentException("La latitude doit être comprise entre -90 et 90");
         }
 
-        return stationRepository.findAllNotDeleted().stream()
+        return stationRepository.findAllNotDeletedWithBookings().stream()
                 .filter(borne -> geolocatorUtil.calculateDistance(
                         latitude,
                         longitude,
@@ -77,7 +71,6 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
                         borne.getLongitude())
                         <= radius.doubleValue()
                 )
-                .map(getChargingStationMapper::toDto)
                 .toList();
     }
 
@@ -89,12 +82,12 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
      * @param searchEnd Moment de fin de la recherche
      * @return Liste des bornes libres au moment spécifié
      */
-    public List<GetChargingStationDTO> getFreeStations(LocalDateTime searchStart, LocalDateTime searchEnd) {
+    public List<ChargingStation> getFreeStations(LocalDateTime searchStart, LocalDateTime searchEnd) {
         if (searchStart == null || searchEnd == null) {
             throw new IllegalArgumentException("Le temps ne peut pas être null");
         }
 
-        List<ChargingStation> allStations = stationRepository.findAllNotDeleted();
+        List<ChargingStation> allStations = stationRepository.findAllNotDeletedWithBookings();
         List<Booking> activeBookings = bookingRepository.findAll().stream()
                 .filter(Booking::isActive)
                 .filter(r -> dateUtil.doOverlap(r.getStartDate(), r.getExpectedEndDate(), searchStart, searchEnd))
@@ -103,8 +96,7 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
         return allStations.stream()
                 .filter(borne -> activeBookings.stream()
                         .noneMatch(reservation -> reservation.getStation().getId().equals(borne.getId())))
-                .map(getChargingStationMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -120,7 +112,7 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
      * @return Liste des bornes libres trouvées dans le rayon spécifié au moment donné
      * @throws IllegalArgumentException si le temps est null ou si les coordonnées sont invalides
      */
-    public List<GetChargingStationDTO> getFreeNearbyStations(
+    public List<ChargingStation> getFreeNearbyStations(
             BigDecimal longitude,
             BigDecimal latitude,
             Integer rayon,
@@ -141,16 +133,16 @@ public class ChargingStationService extends GenericJPAService<ChargingStation, L
         }
 
         // Obtenir les bornes libres au moment donné
-        List<GetChargingStationDTO> freeBornes = getFreeStations(searchStart, searchEnd);
+        List<ChargingStation> freeBornes = getFreeStations(searchStart, searchEnd);
 
         // Obtenir les bornes dans le rayon spécifié
-        List<GetChargingStationDTO> nearbyBornes = getNearbyStations(longitude, latitude, rayon);
+        List<ChargingStation> nearbyBornes = getNearbyStations(longitude, latitude, rayon);
 
         // Retourner l'intersection des deux listes
         return freeBornes.stream()
                 .filter(freeBorne -> nearbyBornes.stream()
                         .anyMatch(nearbyBorne -> nearbyBorne.getId().equals(freeBorne.getId())))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

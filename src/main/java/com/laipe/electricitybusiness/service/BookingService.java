@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -207,15 +208,19 @@ public class BookingService extends GenericJPAService<Booking, Long> {
         return bookingRepository.findById(id)
                 .map(existingBooking -> {
                     if (existingBooking.getState() == BookingState.ONGOING) {
-                        updatedBooking.setFinalConsumptionKwh(BigDecimal.valueOf(powerCalculatorUtil.calculateConsumedPower(
-                                existingBooking.getStation().getPowerKw().doubleValue(),
-                                existingBooking.getStartDate(),
-                                updatedBooking.getActualEndDate()
-                        )));
-                        updatedBooking.setFinalPrice(BigDecimal.valueOf(powerCalculatorUtil.calculateCost(
-                                updatedBooking.getFinalConsumptionKwh().doubleValue(),
-                                existingBooking.getStation().getPricePerKwh().doubleValue()
-                        )));
+                        updatedBooking.setFinalConsumptionKwh(
+                                BigDecimal.valueOf(powerCalculatorUtil.calculateConsumedPower(
+                                        existingBooking.getStation().getPowerKw().doubleValue(),
+                                        existingBooking.getStartDate(),
+                                        updatedBooking.getActualEndDate()
+                                )).setScale(2, RoundingMode.HALF_UP)
+                        );
+                        updatedBooking.setFinalPrice(
+                                BigDecimal.valueOf(powerCalculatorUtil.calculateCost(
+                                        updatedBooking.getFinalConsumptionKwh().doubleValue(),
+                                        existingBooking.getStation().getPricePerKwh().doubleValue()
+                                )).setScale(2, RoundingMode.HALF_UP)
+                        );
                         ModelUtil.copyFields(updatedBooking, existingBooking);
                         return bookingRepository.save(existingBooking);
                     } else {
