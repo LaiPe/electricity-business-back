@@ -15,12 +15,14 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        final String securitySchemeName = "bearerAuth";
+        final String cookieAuthName = "cookieAuth";
 
         return new OpenAPI()
                 .info(new Info()
                         .title("Electricity Business API")
-                        .description("API REST pour la gestion de bornes de recharge électrique")
+                        .description("API REST pour la gestion de bornes de recharge électrique. " +
+                                "L'authentification se fait via un cookie httpOnly 'access_token' contenant le JWT. " +
+                                "Connectez-vous via /api/auth/login pour obtenir le cookie automatiquement.")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("Laipe")
@@ -29,14 +31,14 @@ public class OpenApiConfig {
                                 .name("MIT License")
                                 .url("https://opensource.org/licenses/MIT")))
                 .addSecurityItem(new SecurityRequirement()
-                        .addList(securitySchemeName))
+                        .addList(cookieAuthName))
                 .components(new Components()
-                        .addSecuritySchemes(securitySchemeName, new SecurityScheme()
-                                .name(securitySchemeName)
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")
-                                .description("Entrez le token JWT (sans le préfixe 'Bearer')")));
+                        .addSecuritySchemes(cookieAuthName, new SecurityScheme()
+                                .name("access_token")
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(SecurityScheme.In.COOKIE)
+                                .description("Cookie httpOnly 'access_token' contenant le JWT. " +
+                                        "Le cookie est automatiquement envoyé par le navigateur après connexion via /api/auth/login.")));
     }
 }
 
