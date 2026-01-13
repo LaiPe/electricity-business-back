@@ -15,6 +15,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -33,6 +34,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserService userService;
     private final SecurityUtil securityUtil;
     private final StatusUserMapper statusUserMapper;
+    private final RoutesConfig routesConfig;
 
     @Override
     protected void doFilterInternal(
@@ -40,6 +42,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
+        // Ignorer les routes publiques (Swagger, login, register, etc.)
+        if (publicRoute(request)) {
+            log.debug("Route publique détectée, aucune authentification JWT requise: {}", request.getRequestURI());
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Extraire le token depuis la requête via SecurityUtil
         String accessToken = securityUtil.getTokenFromRequest(request);
@@ -91,5 +100,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // Continuer la chaîne de filtres
         filterChain.doFilter(request, response);
+    }
+
+    private boolean publicRoute(HttpServletRequest request) {
+        return routesConfig.publicRoutes().matches(request);
     }
 }

@@ -22,7 +22,13 @@ public class RoutesConfig {
                 PathPatternRequestMatcher.withDefaults().matcher("/api/stations/nearby-and-free"),
                 PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/api/stations/{id}"),
 
-                PathPatternRequestMatcher.withDefaults().matcher("/actuator/health")
+                PathPatternRequestMatcher.withDefaults().matcher("/actuator/health"),
+                PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui/**"),
+                PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui.html"),
+                PathPatternRequestMatcher.withDefaults().matcher("/v3/api-docs"),
+                PathPatternRequestMatcher.withDefaults().matcher("/v3/api-docs/**"),
+                PathPatternRequestMatcher.withDefaults().matcher("/swagger-resources/**"),
+                PathPatternRequestMatcher.withDefaults().matcher("/webjars/**")
         );
     }
 
